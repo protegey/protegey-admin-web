@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { apiFetch } from "@/lib/api";
-import { Logo } from "@/components/Logo";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { AppHeader } from "@/components/AppHeader";
 import { CreateAdminForm } from "./CreateAdminForm";
-import { logoutAction } from "./actions";
 
 export const metadata: Metadata = {
   title: "Administrators — Protegey Admin",
@@ -25,20 +23,7 @@ export default async function AdminsPage() {
 
   return (
     <div className="min-h-svh bg-background">
-      <header className="flex items-center justify-between border-b border-border px-6 py-4">
-        <Logo className="h-6" />
-        <div className="flex items-center gap-3">
-          <ThemeToggle />
-          <form action={logoutAction}>
-            <button
-              type="submit"
-              className="rounded-md border border-border px-3 py-1.5 text-sm text-foreground transition-colors hover:bg-muted"
-            >
-              Sign out
-            </button>
-          </form>
-        </div>
-      </header>
+      <AppHeader active="admins" />
 
       <main className="mx-auto flex max-w-4xl flex-col gap-6 px-6 py-8">
         <div>

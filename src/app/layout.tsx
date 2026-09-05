@@ -3,9 +3,6 @@ import { Inter, IBM_Plex_Sans } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
-const LOGO_URL =
-  "https://protegey-bucket.s3.eu-north-1.amazonaws.com/public/constant/protegey_logo.svg";
-
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
@@ -20,9 +17,14 @@ const plexSans = IBM_Plex_Sans({
 export const metadata: Metadata = {
   title: "Protegey Admin",
   description: "Protegey — Continental Fraud Intelligence Engine",
+  manifest: "/site.webmanifest",
   icons: {
-    icon: LOGO_URL,
-    shortcut: LOGO_URL,
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    apple: "/apple-touch-icon.png",
   },
 };
 
