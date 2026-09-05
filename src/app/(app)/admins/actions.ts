@@ -1,9 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { apiFetch, ApiError } from "@/lib/api";
-import { clearSessionCookies } from "@/lib/session";
 
 export interface CreateAdminState {
   error?: string;
@@ -33,9 +31,4 @@ export async function createAdminAction(
 
   revalidatePath("/admins");
   return { success: true };
-}
-
-export async function logoutAction() {
-  await clearSessionCookies();
-  redirect("/login");
 }

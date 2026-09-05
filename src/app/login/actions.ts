@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { apiFetch, ApiError } from "@/lib/api";
-import { setSessionCookies } from "@/lib/session";
+import { setSessionCookies, type SessionUser } from "@/lib/session";
 
 export interface LoginState {
   error?: string;
@@ -11,6 +11,7 @@ export interface LoginState {
 interface LoginResponse {
   accessToken: string;
   refreshToken: string;
+  user: SessionUser;
 }
 
 export async function loginAction(_prevState: LoginState, formData: FormData): Promise<LoginState> {
@@ -21,9 +22,9 @@ export async function loginAction(_prevState: LoginState, formData: FormData): P
     return { error: "Please enter your email and password." };
   }
 
-  let tokens: LoginResponse;
+  let response: LoginResponse;
   try {
-    tokens = await apiFetch<LoginResponse>("/auth/login", {
+    response = await apiFetch<LoginResponse>("/auth/login", {
       method: "POST",
       body: { email, password },
       unauthenticated: true,
@@ -35,6 +36,6 @@ export async function loginAction(_prevState: LoginState, formData: FormData): P
     return { error: "Something went wrong. Please try again." };
   }
 
-  await setSessionCookies(tokens.accessToken, tokens.refreshToken);
+  await setSessionCookies(response.accessToken, response.refreshToken, response.user);
   redirect("/admins");
 }

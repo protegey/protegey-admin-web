@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { apiFetch, ApiError } from "@/lib/api";
-import { setSessionCookies } from "@/lib/session";
+import { setSessionCookies, type SessionUser } from "@/lib/session";
 
 export interface AcceptInvitationState {
   error?: string;
@@ -11,6 +11,7 @@ export interface AcceptInvitationState {
 interface AcceptInvitationResponse {
   accessToken: string;
   refreshToken: string;
+  user: SessionUser;
 }
 
 export async function acceptInvitationAction(
@@ -31,9 +32,9 @@ export async function acceptInvitationAction(
     return { error: "Passwords do not match." };
   }
 
-  let tokens: AcceptInvitationResponse;
+  let response: AcceptInvitationResponse;
   try {
-    tokens = await apiFetch<AcceptInvitationResponse>("/auth/invitations/accept", {
+    response = await apiFetch<AcceptInvitationResponse>("/auth/invitations/accept", {
       method: "POST",
       body: { token, password },
       unauthenticated: true,
@@ -45,6 +46,6 @@ export async function acceptInvitationAction(
     return { error: "Something went wrong. Please try again." };
   }
 
-  await setSessionCookies(tokens.accessToken, tokens.refreshToken);
+  await setSessionCookies(response.accessToken, response.refreshToken, response.user);
   redirect("/admins");
 }
