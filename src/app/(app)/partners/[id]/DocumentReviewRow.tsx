@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Check, Download, X } from "lucide-react";
+import { Check, Eye, X } from "lucide-react";
+import { DocumentPreviewDialog } from "@/components/DocumentPreviewDialog";
 import { reviewDocument, type PartnerDocument } from "../documents-actions";
 
 const DOCUMENT_LABELS: Record<string, string> = {
@@ -45,6 +46,7 @@ export function DocumentReviewRow({
   const [rejecting, setRejecting] = useState(false);
   const [reason, setReason] = useState("");
   const [pending, setPending] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   async function handleApprove() {
     setPending(true);
@@ -82,13 +84,14 @@ export function DocumentReviewRow({
         <div className="min-w-0">
           <p className="text-sm font-medium text-foreground">{DOCUMENT_LABELS[document.type] ?? formatLabel(document.type)}</p>
           {document.fileName ? (
-            <a
-              href={`/api/partners/${partnerId}/documents/${document.id}/download`}
+            <button
+              type="button"
+              onClick={() => setPreviewOpen(true)}
               className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground hover:text-primary hover:underline"
             >
-              <Download className="size-3" />
-              {document.fileName}
-            </a>
+              <Eye className="size-3" />
+              Preview {document.fileName}
+            </button>
           ) : (
             <p className="mt-0.5 text-xs text-muted-foreground">Not submitted yet</p>
           )}
@@ -160,6 +163,16 @@ export function DocumentReviewRow({
             </div>
           )}
         </div>
+      ) : null}
+
+      {document.fileName ? (
+        <DocumentPreviewDialog
+          open={previewOpen}
+          onClose={() => setPreviewOpen(false)}
+          fileName={document.fileName}
+          fileUrl={`/api/partners/${partnerId}/documents/${document.id}/download`}
+          mimeType={document.mimeType}
+        />
       ) : null}
     </div>
   );
