@@ -4,7 +4,7 @@ const PUBLIC_PATHS = ["/login", "/invitations/accept"];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const hasSession = Boolean(request.cookies.get("protegey_access_token")?.value);
+  const hasSession = Boolean(request.cookies.get("protegey_admin_access_token")?.value);
   const isPublicPath = PUBLIC_PATHS.some((path) => pathname.startsWith(path));
 
   if (!hasSession && !isPublicPath) {
