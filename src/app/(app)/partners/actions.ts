@@ -54,6 +54,20 @@ export async function createPartnerAction(
   return { success: true };
 }
 
+export async function deletePartnerAction(partnerId: string): Promise<PartnerFormState> {
+  try {
+    await apiFetch(`/partners/${partnerId}`, { method: "DELETE" });
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { error: error.message };
+    }
+    return { error: "Something went wrong. Please try again." };
+  }
+
+  revalidatePath("/partners");
+  return { success: true };
+}
+
 export async function updatePartnerAction(
   partnerId: string,
   _prevState: PartnerFormState,

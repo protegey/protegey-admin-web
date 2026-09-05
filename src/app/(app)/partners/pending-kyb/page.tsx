@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { apiFetch } from "@/lib/api";
-import { PartnersClient } from "./PartnersClient";
+import { PendingKybIllustration } from "@/components/PendingKybIllustration";
+import { PartnersClient } from "../PartnersClient";
 
 export const metadata: Metadata = {
-  title: "Partners — Protegey Admin",
+  title: "Pending KYB — Protegey Admin",
 };
 
 interface Partner {
@@ -28,7 +29,7 @@ interface PaginatedPartners {
   totalPages: number;
 }
 
-export default async function PartnersPage({
+export default async function PendingKybPage({
   searchParams,
 }: {
   searchParams: Promise<{ page?: string; search?: string }>;
@@ -36,7 +37,7 @@ export default async function PartnersPage({
   const { page: pageParam, search } = await searchParams;
   const page = Math.max(1, Number(pageParam) || 1);
 
-  const query = new URLSearchParams({ page: String(page), limit: "20" });
+  const query = new URLSearchParams({ page: String(page), limit: "20", status: "pending_verification" });
   if (search) query.set("search", search);
 
   const result = await apiFetch<PaginatedPartners>(`/partners?${query.toString()}`);
@@ -48,6 +49,9 @@ export default async function PartnersPage({
         page={result.page}
         totalPages={result.totalPages}
         total={result.total}
+        heading="Pending KYB"
+        description="Partners still waiting on document verification before they can be activated."
+        illustration={<PendingKybIllustration className="h-20 w-20 shrink-0" />}
       />
     </Suspense>
   );

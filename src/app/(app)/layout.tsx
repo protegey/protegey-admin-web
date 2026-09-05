@@ -1,4 +1,4 @@
-import { Users, Handshake } from "lucide-react";
+import { Users, Handshake, ShieldAlert } from "lucide-react";
 import { Sidebar, type NavItem } from "@/components/Sidebar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { getSessionUser } from "@/lib/session";
@@ -7,6 +7,7 @@ import { logoutAction } from "@/lib/auth-actions";
 const NAV_ITEMS: NavItem[] = [
   { href: "/admins", label: "Administrators", icon: <Users className="size-4" /> },
   { href: "/partners", label: "Partners", icon: <Handshake className="size-4" /> },
+  { href: "/partners/pending-kyb", label: "Pending KYB", icon: <ShieldAlert className="size-4" /> },
 ];
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {

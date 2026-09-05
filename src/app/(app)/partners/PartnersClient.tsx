@@ -1,10 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Plus, Pencil, FileText, ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
+import { Plus, Pencil, Trash2, Search, Eye, ChevronLeft, ChevronRight } from "lucide-react";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { PartnerFormDialog, type EditablePartner } from "./PartnerFormDialog";
-import { PartnerDocumentsDialog } from "./PartnerDocumentsDialog";
+import { deletePartnerAction } from "./actions";
 
 interface Partner {
   id: string;
@@ -40,18 +43,26 @@ export function PartnersClient({
   page,
   totalPages,
   total,
+  heading = "Partners",
+  description = "Institutions onboarded onto Protegey — fintechs, banks, telcos and regulators.",
+  illustration,
 }: {
   partners: Partner[];
   page: number;
   totalPages: number;
   total: number;
+  heading?: string;
+  description?: string;
+  illustration?: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [searchInput, setSearchInput] = useState(searchParams.get("search") ?? "");
   const [dialogPartner, setDialogPartner] = useState<EditablePartner | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [docsPartner, setDocsPartner] = useState<{ id: string; name: string; status: string } | null>(null);
-  const [docsOpen, setDocsOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Partner | null>(null);
+  const [deletePending, setDeletePending] = useState(false);
 
   function openCreateDialog() {
     setDialogPartner(null);
@@ -72,35 +83,80 @@ export function PartnersClient({
     setDialogOpen(true);
   }
 
-  function openDocumentsDialog(partner: Partner) {
-    setDocsPartner({ id: partner.id, name: partner.name, status: partner.status });
-    setDocsOpen(true);
+  function updateParams(mutate: (params: URLSearchParams) => void) {
+    const params = new URLSearchParams(searchParams.toString());
+    mutate(params);
+    router.push(`${pathname}?${params.toString()}`);
   }
 
   function goToPage(nextPage: number) {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", String(nextPage));
-    router.push(`/partners?${params.toString()}`);
+    updateParams((params) => params.set("page", String(nextPage)));
+  }
+
+  function submitSearch(e: React.FormEvent) {
+    e.preventDefault();
+    updateParams((params) => {
+      if (searchInput.trim()) {
+        params.set("search", searchInput.trim());
+      } else {
+        params.delete("search");
+      }
+      params.set("page", "1");
+    });
+  }
+
+  async function handleDelete() {
+    if (!deleteTarget) return;
+    setDeletePending(true);
+    const result = await deletePartnerAction(deleteTarget.id);
+    setDeletePending(false);
+    if (result.error) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success("Partner deleted.");
+    setDeleteTarget(null);
+    router.refresh();
   }
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-foreground">Partners</h1>
-          <p className="text-sm text-muted-foreground">
-            Institutions onboarded onto Protegey — fintechs, banks, telcos and regulators.
-          </p>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          {illustration}
+          <div>
+            <h1 className="text-xl font-semibold text-foreground">{heading}</h1>
+            <p className="text-sm text-muted-foreground">{description}</p>
+          </div>
         </div>
         <button
           type="button"
           onClick={openCreateDialog}
-          className="flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+          className="flex shrink-0 items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
         >
           <Plus className="size-4" />
           Add partner
         </button>
       </div>
+
+      <form onSubmit={submitSearch} className="flex max-w-sm items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="text"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Search by name, email, phone or country…"
+            className="w-full rounded-md border border-border bg-background py-2 pl-8 pr-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+          />
+        </div>
+        <button
+          type="submit"
+          className="rounded-md border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+        >
+          Search
+        </button>
+      </form>
 
       <div className="overflow-hidden rounded-md border border-border">
         <table className="w-full text-left text-sm">
@@ -118,7 +174,11 @@ export function PartnersClient({
           <tbody className="divide-y divide-border">
             {partners.map((partner) => (
               <tr key={partner.id}>
-                <td className="px-4 py-2.5 text-foreground">{partner.name}</td>
+                <td className="px-4 py-2.5 text-foreground">
+                  <Link href={`/partners/${partner.id}`} className="hover:text-primary hover:underline">
+                    {partner.name}
+                  </Link>
+                </td>
                 <td className="px-4 py-2.5 text-muted-foreground">{formatLabel(partner.type)}</td>
                 <td className="px-4 py-2.5 text-muted-foreground">{formatLabel(partner.plan)}</td>
                 <td className="px-4 py-2.5 text-muted-foreground">{partner.contactEmail ?? "—"}</td>
@@ -134,14 +194,13 @@ export function PartnersClient({
                 </td>
                 <td className="px-4 py-2.5">
                   <div className="flex justify-end gap-2">
-                    <button
-                      type="button"
-                      onClick={() => openDocumentsDialog(partner)}
+                    <Link
+                      href={`/partners/${partner.id}`}
                       className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted"
                     >
-                      <FileText className="size-3.5" />
-                      Documents
-                    </button>
+                      <Eye className="size-3.5" />
+                      View
+                    </Link>
                     <button
                       type="button"
                       onClick={() => openEditDialog(partner)}
@@ -150,6 +209,14 @@ export function PartnersClient({
                       <Pencil className="size-3.5" />
                       Edit
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => setDeleteTarget(partner)}
+                      className="inline-flex items-center gap-1 rounded-md border border-destructive/30 px-2.5 py-1 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10"
+                    >
+                      <Trash2 className="size-3.5" />
+                      Delete
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -157,7 +224,7 @@ export function PartnersClient({
             {partners.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-4 py-6 text-center text-muted-foreground">
-                  No partners yet.
+                  No partners found.
                 </td>
               </tr>
             ) : null}
@@ -194,7 +261,15 @@ export function PartnersClient({
       ) : null}
 
       <PartnerFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} partner={dialogPartner} />
-      <PartnerDocumentsDialog open={docsOpen} onClose={() => setDocsOpen(false)} partner={docsPartner} />
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        title="Delete this partner?"
+        description="This removes the partner from every list and blocks their team from signing in. Records are kept for audit purposes."
+        confirmPhrase={deleteTarget?.name ?? ""}
+        pending={deletePending}
+      />
     </div>
   );
 }
