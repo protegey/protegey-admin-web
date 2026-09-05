@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Pencil, Trash2 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { ConfirmActionDialog } from "@/components/ConfirmActionDialog";
 import { PartnerDetailIllustration } from "@/components/PartnerDetailIllustration";
 import { PartnerFormDialog, type EditablePartner } from "../PartnerFormDialog";
 import { decidePartner, getPartnerDocuments, type PartnerDocument } from "../documents-actions";
@@ -65,8 +66,13 @@ export function PartnerDetailClient({
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deletePending, setDeletePending] = useState(false);
   const [decisionReason, setDecisionReason] = useState("");
-  const [showRejectPartner, setShowRejectPartner] = useState(false);
+  const [confirmDecision, setConfirmDecision] = useState<"approve" | "reject" | null>(null);
   const [decisionPending, setDecisionPending] = useState(false);
+
+  function closeDecisionConfirm() {
+    setConfirmDecision(null);
+    setDecisionReason("");
+  }
 
   useEffect(() => {
     setPartner(initialPartner);
@@ -92,6 +98,7 @@ export function PartnerDetailClient({
       toast.error(result.error);
     } else {
       toast.success("Partner approved and activated.");
+      closeDecisionConfirm();
       router.refresh();
     }
   }
@@ -108,8 +115,7 @@ export function PartnerDetailClient({
       toast.error(result.error);
     } else {
       toast.success("Partner application rejected.");
-      setShowRejectPartner(false);
-      setDecisionReason("");
+      closeDecisionConfirm();
       router.refresh();
     }
   }

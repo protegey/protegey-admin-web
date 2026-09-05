@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Check, Eye, X } from "lucide-react";
 import { DocumentPreviewDialog } from "@/components/DocumentPreviewDialog";
+import { ConfirmActionDialog } from "@/components/ConfirmActionDialog";
 import { reviewDocument, type PartnerDocument } from "../documents-actions";
 
 const DOCUMENT_LABELS: Record<string, string> = {
@@ -43,10 +44,15 @@ export function DocumentReviewRow({
   document: PartnerDocument;
   onChanged: () => void;
 }) {
-  const [rejecting, setRejecting] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<"approve" | "reject" | null>(null);
   const [reason, setReason] = useState("");
   const [pending, setPending] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+
+  function closeConfirm() {
+    setConfirmAction(null);
+    setReason("");
+  }
 
   async function handleApprove() {
     setPending(true);
@@ -56,6 +62,7 @@ export function DocumentReviewRow({
       toast.error(result.error);
     } else {
       toast.success("Document approved.");
+      closeConfirm();
       onChanged();
     }
   }
@@ -72,8 +79,7 @@ export function DocumentReviewRow({
       toast.error(result.error);
     } else {
       toast.success("Document rejected.");
-      setRejecting(false);
-      setReason("");
+      closeConfirm();
       onChanged();
     }
   }
@@ -109,59 +115,23 @@ export function DocumentReviewRow({
       ) : null}
 
       {document.status === "submitted" ? (
-        <div className="mt-3">
-          {rejecting ? (
-            <div className="flex flex-col gap-2">
-              <textarea
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                placeholder="Explain why this document is being rejected…"
-                rows={2}
-                className="w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
-              />
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  disabled={pending}
-                  onClick={handleReject}
-                  className="rounded-md bg-destructive px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-                >
-                  Confirm rejection
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setRejecting(false);
-                    setReason("");
-                  }}
-                  className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="flex gap-2">
-              <button
-                type="button"
-                disabled={pending}
-                onClick={handleApprove}
-                className="flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
-              >
-                <Check className="size-3.5" />
-                Approve
-              </button>
-              <button
-                type="button"
-                disabled={pending}
-                onClick={() => setRejecting(true)}
-                className="flex items-center gap-1 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted"
-              >
-                <X className="size-3.5" />
-                Reject
-              </button>
-            </div>
-          )}
+        <div className="mt-3 flex gap-2">
+          <button
+            type="button"
+            onClick={() => setConfirmAction("approve")}
+            className="flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            <Check className="size-3.5" />
+            Approve
+          </button>
+          <button
+            type="button"
+            onClick={() => setConfirmAction("reject")}
+            className="flex items-center gap-1 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted"
+          >
+            <X className="size-3.5" />
+            Reject
+          </button>
         </div>
       ) : null}
 
@@ -174,6 +144,39 @@ export function DocumentReviewRow({
           mimeType={document.mimeType}
         />
       ) : null}
+
+      <ConfirmActionDialog
+        open={confirmAction === "approve"}
+        onClose={closeConfirm}
+        onConfirm={handleApprove}
+        title="Approve this document?"
+        description="The partner will see it marked as approved."
+        confirmLabel="Approve"
+        pendingLabel="Approving…"
+        pending={pending}
+      />
+
+      <ConfirmActionDialog
+        open={confirmAction === "reject"}
+        onClose={closeConfirm}
+        onConfirm={handleReject}
+        title="Reject this document?"
+        description="The partner will see this reason and can resubmit."
+        confirmLabel="Confirm rejection"
+        pendingLabel="Rejecting…"
+        pending={pending}
+        confirmDisabled={reason.trim().length < 5}
+        variant="destructive"
+      >
+        <textarea
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder="Explain why this document is being rejected…"
+          rows={3}
+          autoFocus
+          className="w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+        />
+      </ConfirmActionDialog>
     </div>
   );
 }
