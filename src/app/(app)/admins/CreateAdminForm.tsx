@@ -2,6 +2,8 @@
 
 import { useActionState, useEffect, useRef } from "react";
 import { useFormStatus } from "react-dom";
+import { useRouter } from "next/navigation";
+import { RoleMultiSelect } from "@/components/RoleMultiSelect";
 import { createAdminAction, type CreateAdminState } from "./actions";
 import type { AssignableRole } from "./page";
 
@@ -20,21 +22,24 @@ function SubmitButton() {
   );
 }
 
-export function CreateAdminForm({ roles }: { roles: AssignableRole[] }) {
+export function CreateAdminForm({ roles, onSuccess }: { roles: AssignableRole[]; onSuccess?: () => void }) {
+  const router = useRouter();
   const [state, formAction] = useActionState(createAdminAction, initialState);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     if (state.success) {
       formRef.current?.reset();
+      router.refresh();
+      const timeout = setTimeout(() => onSuccess?.(), 1000);
+      return () => clearTimeout(timeout);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.success]);
 
   return (
-    <form ref={formRef} action={formAction} className="flex flex-col gap-4 rounded-md border border-border bg-card p-5">
-      <h2 className="text-sm font-semibold text-foreground">Invite a new administrator</h2>
-
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <form ref={formRef} action={formAction} className="flex flex-col gap-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <input
           name="firstName"
           type="text"
@@ -54,26 +59,13 @@ export function CreateAdminForm({ roles }: { roles: AssignableRole[] }) {
           type="email"
           placeholder="Email address"
           required
-          className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+          className="sm:col-span-2 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
         />
       </div>
 
       <div>
-        <p className="mb-2 text-xs font-medium text-muted-foreground">Roles</p>
-        <div className="flex flex-wrap gap-4">
-          {roles.map((role) => (
-            <label key={role.id} className="flex items-center gap-2 text-sm text-foreground">
-              <input
-                type="checkbox"
-                name="roleIds"
-                value={role.id}
-                defaultChecked={role.name === "admin"}
-                className="size-4 rounded border-border"
-              />
-              {role.displayName}
-            </label>
-          ))}
-        </div>
+        <p className="mb-1.5 text-xs font-medium text-muted-foreground">Roles</p>
+        <RoleMultiSelect roles={roles} defaultSelectedNames={["admin"]} />
       </div>
 
       {state.error ? <p className="text-sm text-destructive">{state.error}</p> : null}
@@ -81,7 +73,7 @@ export function CreateAdminForm({ roles }: { roles: AssignableRole[] }) {
         <p className="text-sm text-primary">Invitation sent — they&apos;ll receive an email to set up their account.</p>
       ) : null}
 
-      <div>
+      <div className="flex justify-end">
         <SubmitButton />
       </div>
     </form>

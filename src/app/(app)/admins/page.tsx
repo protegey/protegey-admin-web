@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { apiFetch } from "@/lib/api";
-import { CreateAdminForm } from "./CreateAdminForm";
+import { CreateAdminDialogButton } from "./CreateAdminDialogButton";
 
 export const metadata: Metadata = {
   title: "Administrators — Protegey Admin",
@@ -31,14 +31,15 @@ export default async function AdminsPage() {
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6">
-      <div>
-        <h1 className="text-xl font-semibold text-foreground">Administrators</h1>
-        <p className="text-sm text-muted-foreground">
-          Protegey staff accounts with access to the admin panel.
-        </p>
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-semibold text-foreground">Administrators</h1>
+          <p className="text-sm text-muted-foreground">
+            Protegey staff accounts with access to the admin panel.
+          </p>
+        </div>
+        <CreateAdminDialogButton roles={roles} />
       </div>
-
-      <CreateAdminForm roles={roles} />
 
       <div className="overflow-hidden rounded-md border border-border">
         <table className="w-full text-left text-sm">
