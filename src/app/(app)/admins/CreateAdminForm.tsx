@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useRef } from "react";
 import { useFormStatus } from "react-dom";
 import { createAdminAction, type CreateAdminState } from "./actions";
+import type { AssignableRole } from "./page";
 
 const initialState: CreateAdminState = {};
 
@@ -19,7 +20,7 @@ function SubmitButton() {
   );
 }
 
-export function CreateAdminForm() {
+export function CreateAdminForm({ roles }: { roles: AssignableRole[] }) {
   const [state, formAction] = useActionState(createAdminAction, initialState);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -55,6 +56,24 @@ export function CreateAdminForm() {
           required
           className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
         />
+      </div>
+
+      <div>
+        <p className="mb-2 text-xs font-medium text-muted-foreground">Roles</p>
+        <div className="flex flex-wrap gap-4">
+          {roles.map((role) => (
+            <label key={role.id} className="flex items-center gap-2 text-sm text-foreground">
+              <input
+                type="checkbox"
+                name="roleIds"
+                value={role.id}
+                defaultChecked={role.name === "admin"}
+                className="size-4 rounded border-border"
+              />
+              {role.displayName}
+            </label>
+          ))}
+        </div>
       </div>
 
       {state.error ? <p className="text-sm text-destructive">{state.error}</p> : null}

@@ -1,13 +1,19 @@
-import { Users, Handshake, ShieldAlert } from "lucide-react";
+import Link from "next/link";
+import { Handshake, Users } from "lucide-react";
 import { Sidebar, type NavItem } from "@/components/Sidebar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { getSessionUser } from "@/lib/session";
 import { logoutAction } from "@/lib/auth-actions";
 
 const NAV_ITEMS: NavItem[] = [
-  { href: "/admins", label: "Administrators", icon: <Users className="size-4" /> },
-  { href: "/partners", label: "Partners", icon: <Handshake className="size-4" /> },
-  { href: "/partners/pending-kyb", label: "Pending KYB", icon: <ShieldAlert className="size-4" /> },
+  {
+    label: "Partners",
+    icon: <Handshake className="size-4" />,
+    children: [
+      { href: "/partners", label: "Partners" },
+      { href: "/partners/pending-kyb", label: "Pending KYB" },
+    ],
+  },
 ];
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -34,7 +40,18 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </div>
         }
       />
-      <main className="flex-1 overflow-y-auto px-8 py-8">{children}</main>
+      <main className="flex flex-1 flex-col overflow-y-auto">
+        <div className="flex justify-end border-b border-border px-8 py-3">
+          <Link
+            href="/admins"
+            className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+          >
+            <Users className="size-4" />
+            Administrators
+          </Link>
+        </div>
+        <div className="flex-1 px-8 py-8">{children}</div>
+      </main>
     </div>
   );
 }

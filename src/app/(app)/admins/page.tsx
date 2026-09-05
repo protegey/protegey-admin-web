@@ -17,8 +17,17 @@ interface Admin {
   roles: { name: string; displayName: string }[];
 }
 
+export interface AssignableRole {
+  id: string;
+  name: string;
+  displayName: string;
+}
+
 export default async function AdminsPage() {
-  const admins = await apiFetch<Admin[]>("/admins");
+  const [admins, roles] = await Promise.all([
+    apiFetch<Admin[]>("/admins"),
+    apiFetch<AssignableRole[]>("/roles?scope=core"),
+  ]);
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6">
@@ -29,7 +38,7 @@ export default async function AdminsPage() {
         </p>
       </div>
 
-      <CreateAdminForm />
+      <CreateAdminForm roles={roles} />
 
       <div className="overflow-hidden rounded-md border border-border">
         <table className="w-full text-left text-sm">
