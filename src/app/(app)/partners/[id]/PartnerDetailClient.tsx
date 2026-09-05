@@ -214,54 +214,24 @@ export function PartnerDetailClient({
                 Every document must be approved before this partner can be activated.
               </p>
             ) : null}
-            {showRejectPartner ? (
-              <div className="flex flex-col gap-2">
-                <textarea
-                  value={decisionReason}
-                  onChange={(e) => setDecisionReason(e.target.value)}
-                  placeholder="Explain why this partner's application is being rejected…"
-                  rows={2}
-                  className="w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
-                />
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    disabled={decisionPending}
-                    onClick={handleRejectPartner}
-                    className="rounded-md bg-destructive px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-                  >
-                    Confirm rejection
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowRejectPartner(false)}
-                    className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  disabled={decisionPending || !allApproved}
-                  onClick={handleApprovePartner}
-                  title={!allApproved ? "All documents must be approved first" : undefined}
-                  className="rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  Approve partner
-                </button>
-                <button
-                  type="button"
-                  disabled={decisionPending}
-                  onClick={() => setShowRejectPartner(true)}
-                  className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted"
-                >
-                  Reject partner
-                </button>
-              </div>
-            )}
+            <div className="flex gap-2">
+              <button
+                type="button"
+                disabled={!allApproved}
+                onClick={() => setConfirmDecision("approve")}
+                title={!allApproved ? "All documents must be approved first" : undefined}
+                className="rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Approve partner
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmDecision("reject")}
+                className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted"
+              >
+                Reject partner
+              </button>
+            </div>
           </div>
         ) : null}
       </div>
@@ -276,6 +246,39 @@ export function PartnerDetailClient({
         confirmPhrase={partner.name}
         pending={deletePending}
       />
+
+      <ConfirmActionDialog
+        open={confirmDecision === "approve"}
+        onClose={closeDecisionConfirm}
+        onConfirm={handleApprovePartner}
+        title={`Activate ${partner.name}?`}
+        description="They'll get full access to the partner portal and an email confirming activation."
+        confirmLabel="Approve partner"
+        pendingLabel="Approving…"
+        pending={decisionPending}
+      />
+
+      <ConfirmActionDialog
+        open={confirmDecision === "reject"}
+        onClose={closeDecisionConfirm}
+        onConfirm={handleRejectPartner}
+        title={`Reject ${partner.name}'s application?`}
+        description="They'll need to resubmit every document. This reason is shown to them by email."
+        confirmLabel="Confirm rejection"
+        pendingLabel="Rejecting…"
+        pending={decisionPending}
+        confirmDisabled={decisionReason.trim().length < 5}
+        variant="destructive"
+      >
+        <textarea
+          value={decisionReason}
+          onChange={(e) => setDecisionReason(e.target.value)}
+          placeholder="Explain why this partner's application is being rejected…"
+          rows={3}
+          autoFocus
+          className="w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+        />
+      </ConfirmActionDialog>
     </div>
   );
 }

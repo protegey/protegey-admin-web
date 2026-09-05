@@ -2,8 +2,8 @@ import Link from "next/link";
 import { Handshake, Users } from "lucide-react";
 import { Sidebar, type NavItem } from "@/components/Sidebar";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { SignOutButton } from "@/components/SignOutButton";
 import { getSessionUser } from "@/lib/session";
-import { logoutAction } from "@/lib/auth-actions";
 
 const NAV_ITEMS: NavItem[] = [
   {
@@ -28,14 +28,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <p className="truncate px-1 text-xs text-muted-foreground">{user?.email}</p>
             <div className="flex items-center gap-2">
               <ThemeToggle />
-              <form action={logoutAction} className="flex-1">
-                <button
-                  type="submit"
-                  className="w-full rounded-md border border-border px-3 py-1.5 text-sm text-foreground transition-colors hover:bg-muted"
-                >
-                  Sign out
-                </button>
-              </form>
+              <SignOutButton className="flex-1 rounded-md border border-border px-3 py-1.5 text-sm text-foreground transition-colors hover:bg-muted" />
             </div>
           </div>
         }
