@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { getPartnerDocuments, type PartnerDocument } from "../documents-actions";
+import { getPartnerTeam, getPartnerPendingInvitations } from "../team-actions";
 import { PartnerDetailClient } from "./PartnerDetailClient";
 
 export const metadata: Metadata = {
@@ -26,9 +27,11 @@ interface Partner {
 
 export default async function PartnerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [partner, documents] = await Promise.all([
+  const [partner, documents, team, invitations] = await Promise.all([
     apiFetch<Partner>(`/partners/${id}`),
     getPartnerDocuments(id) as Promise<PartnerDocument[]>,
+    getPartnerTeam(id),
+    getPartnerPendingInvitations(id),
   ]);
 
   return (
@@ -40,7 +43,7 @@ export default async function PartnerDetailPage({ params }: { params: Promise<{ 
         <ArrowLeft className="size-3.5" />
         Back to partners
       </Link>
-      <PartnerDetailClient partner={partner} documents={documents} />
+      <PartnerDetailClient partner={partner} documents={documents} team={team} invitations={invitations} />
     </div>
   );
 }

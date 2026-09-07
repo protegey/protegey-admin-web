@@ -5,7 +5,7 @@ import { PendingKybIllustration } from "@/components/PendingKybIllustration";
 import { PartnersClient } from "../PartnersClient";
 
 export const metadata: Metadata = {
-  title: "Pending KYB — Protegey Admin",
+  title: "Partner Verification — Protegey Admin",
 };
 
 interface Partner {
@@ -49,7 +49,7 @@ export default async function PendingKybPage({
         page={result.page}
         totalPages={result.totalPages}
         total={result.total}
-        heading="Pending KYB"
+        heading="Partner Verification"
         description="Partners still waiting on document verification before they can be activated."
         illustration={<PendingKybIllustration className="h-20 w-20 shrink-0" />}
       />

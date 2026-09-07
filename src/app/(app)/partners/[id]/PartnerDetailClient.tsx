@@ -10,7 +10,9 @@ import { PartnerDetailIllustration } from "@/components/PartnerDetailIllustratio
 import { PartnerFormDialog, type EditablePartner } from "../PartnerFormDialog";
 import { decidePartner, getPartnerDocuments, type PartnerDocument } from "../documents-actions";
 import { deletePartnerAction } from "../actions";
+import type { TeamMember, PendingInvitation } from "../team-actions";
 import { DocumentReviewRow } from "./DocumentReviewRow";
+import { PartnerTeamSection } from "./PartnerTeamSection";
 
 interface Partner {
   id: string;
@@ -55,9 +57,13 @@ function InfoField({ label, value }: { label: string; value: React.ReactNode }) 
 export function PartnerDetailClient({
   partner: initialPartner,
   documents: initialDocuments,
+  team,
+  invitations,
 }: {
   partner: Partner;
   documents: PartnerDocument[];
+  team: TeamMember[];
+  invitations: PendingInvitation[];
 }) {
   const router = useRouter();
   const [partner, setPartner] = useState(initialPartner);
@@ -235,6 +241,8 @@ export function PartnerDetailClient({
           </div>
         ) : null}
       </div>
+
+      <PartnerTeamSection partnerId={partner.id} initialMembers={team} initialInvitations={invitations} />
 
       <PartnerFormDialog open={editOpen} onClose={() => setEditOpen(false)} partner={editablePartner} />
       <ConfirmDialog

@@ -11,7 +11,7 @@ const NAV_ITEMS: NavItem[] = [
     icon: <Handshake className="size-4" />,
     children: [
       { href: "/partners", label: "Partners" },
-      { href: "/partners/pending-kyb", label: "Pending KYB" },
+      { href: "/partners/pending-kyb", label: "Partner Verification" },
     ],
   },
 ];
