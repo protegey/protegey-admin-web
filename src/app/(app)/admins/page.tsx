@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { apiFetch } from "@/lib/api";
 import { CreateAdminDialogButton } from "./CreateAdminDialogButton";
+import { ResendAdminInvitationButton } from "./ResendAdminInvitationButton";
+import { EditAdminInvitationDialogButton } from "./EditAdminInvitationDialogButton";
+import { AdminActions } from "./AdminActions";
+import { getPendingAdminInvitations } from "./actions";
 
 export const metadata: Metadata = {
   title: "Administrators — Protegey Admin",
@@ -24,9 +28,10 @@ export interface AssignableRole {
 }
 
 export default async function AdminsPage() {
-  const [admins, roles] = await Promise.all([
+  const [admins, roles, invitations] = await Promise.all([
     apiFetch<Admin[]>("/admins"),
     apiFetch<AssignableRole[]>("/roles?scope=core"),
+    getPendingAdminInvitations(),
   ]);
 
   return (
@@ -41,6 +46,41 @@ export default async function AdminsPage() {
         <CreateAdminDialogButton roles={roles} />
       </div>
 
+      {invitations.length > 0 ? (
+        <div className="overflow-hidden rounded-md border border-border">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-muted text-muted-foreground">
+              <tr>
+                <th className="px-4 py-2.5 font-medium">Pending invitation</th>
+                <th className="px-4 py-2.5 font-medium">Role</th>
+                <th className="px-4 py-2.5 font-medium text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {invitations.map((invitation) => (
+                <tr key={invitation.id}>
+                  <td className="px-4 py-2.5">
+                    <p className="text-foreground">
+                      {invitation.firstName} {invitation.lastName}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{invitation.email}</p>
+                  </td>
+                  <td className="px-4 py-2.5 text-muted-foreground">
+                    {invitation.roles.map((role) => role.displayName).join(", ") || "—"}
+                  </td>
+                  <td className="px-4 py-2.5">
+                    <div className="flex justify-end gap-2">
+                      <EditAdminInvitationDialogButton invitation={invitation} roles={roles} />
+                      <ResendAdminInvitationButton invitationId={invitation.id} />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
+
       <div className="overflow-hidden rounded-md border border-border">
         <table className="w-full text-left text-sm">
           <thead className="bg-muted text-muted-foreground">
@@ -50,6 +90,7 @@ export default async function AdminsPage() {
               <th className="px-4 py-2.5 font-medium">Role</th>
               <th className="px-4 py-2.5 font-medium">Status</th>
               <th className="px-4 py-2.5 font-medium">Last login</th>
+              <th className="px-4 py-2.5 font-medium text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -75,6 +116,11 @@ export default async function AdminsPage() {
                 </td>
                 <td className="px-4 py-2.5 text-muted-foreground">
                   {admin.lastLoginAt ? new Date(admin.lastLoginAt).toLocaleString() : "Never"}
+                </td>
+                <td className="px-4 py-2.5">
+                  <div className="flex justify-end">
+                    <AdminActions userId={admin.id} />
+                  </div>
                 </td>
               </tr>
             ))}
