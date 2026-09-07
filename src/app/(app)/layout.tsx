@@ -20,7 +20,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const user = await getSessionUser();
 
   return (
-    <div className="flex min-h-svh bg-background">
+    <div className="flex h-svh bg-background">
       <Sidebar
         navItems={NAV_ITEMS}
         footer={
