@@ -10,16 +10,20 @@ import {
   setPartnerAgentStatus,
   type TeamMember,
   type PendingInvitation,
+  type AssignableRole,
 } from "../team-actions";
+import { EditPartnerInvitationDialogButton } from "./EditPartnerInvitationDialogButton";
 
 export function PartnerTeamSection({
   partnerId,
   initialMembers,
   initialInvitations,
+  roles,
 }: {
   partnerId: string;
   initialMembers: TeamMember[];
   initialInvitations: PendingInvitation[];
+  roles: AssignableRole[];
 }) {
   const [members, setMembers] = useState(initialMembers);
   const [invitations, setInvitations] = useState(initialInvitations);
@@ -79,14 +83,17 @@ export function PartnerTeamSection({
                   {invitation.email} · {invitation.roles.map((role) => role.displayName).join(", ") || "—"}
                 </p>
               </div>
-              <button
-                type="button"
-                disabled={resendingId === invitation.id}
-                onClick={() => handleResend(invitation.id)}
-                className="shrink-0 rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-60"
-              >
-                {resendingId === invitation.id ? "Sending…" : "Resend"}
-              </button>
+              <div className="flex shrink-0 items-center gap-2">
+                <EditPartnerInvitationDialogButton partnerId={partnerId} invitation={invitation} roles={roles} />
+                <button
+                  type="button"
+                  disabled={resendingId === invitation.id}
+                  onClick={() => handleResend(invitation.id)}
+                  className="rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-60"
+                >
+                  {resendingId === invitation.id ? "Sending…" : "Resend"}
+                </button>
+              </div>
             </div>
           ))}
         </div>

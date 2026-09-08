@@ -6,8 +6,12 @@ import { useRouter } from "next/navigation";
 import { Pencil } from "lucide-react";
 import { Dialog } from "@/components/Dialog";
 import { RoleMultiSelect } from "@/components/RoleMultiSelect";
-import { updateAdminInvitationAction, type PendingAdminInvitation, type UpdateInvitationState } from "./actions";
-import type { AssignableRole } from "./page";
+import {
+  updatePartnerInvitationAction,
+  type AssignableRole,
+  type PendingInvitation,
+  type UpdateInvitationState,
+} from "../team-actions";
 
 const initialState: UpdateInvitationState = {};
 
@@ -24,16 +28,18 @@ function SubmitButton() {
   );
 }
 
-export function EditAdminInvitationDialogButton({
+export function EditPartnerInvitationDialogButton({
+  partnerId,
   invitation,
   roles,
 }: {
-  invitation: PendingAdminInvitation;
+  partnerId: string;
+  invitation: PendingInvitation;
   roles: AssignableRole[];
 }) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
-  const action = updateAdminInvitationAction.bind(null, invitation.id);
+  const action = updatePartnerInvitationAction.bind(null, partnerId, invitation.id);
   const [state, formAction] = useActionState(action, initialState);
 
   useEffect(() => {

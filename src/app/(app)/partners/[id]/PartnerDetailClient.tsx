@@ -10,7 +10,7 @@ import { PartnerDetailIllustration } from "@/components/PartnerDetailIllustratio
 import { PartnerFormDialog, type EditablePartner } from "../PartnerFormDialog";
 import { decidePartner, getPartnerDocuments, type PartnerDocument } from "../documents-actions";
 import { deletePartnerAction } from "../actions";
-import type { TeamMember, PendingInvitation } from "../team-actions";
+import type { TeamMember, PendingInvitation, AssignableRole } from "../team-actions";
 import { DocumentReviewRow } from "./DocumentReviewRow";
 import { PartnerTeamSection } from "./PartnerTeamSection";
 
@@ -59,11 +59,13 @@ export function PartnerDetailClient({
   documents: initialDocuments,
   team,
   invitations,
+  roles,
 }: {
   partner: Partner;
   documents: PartnerDocument[];
   team: TeamMember[];
   invitations: PendingInvitation[];
+  roles: AssignableRole[];
 }) {
   const router = useRouter();
   const [partner, setPartner] = useState(initialPartner);
@@ -242,7 +244,7 @@ export function PartnerDetailClient({
         ) : null}
       </div>
 
-      <PartnerTeamSection partnerId={partner.id} initialMembers={team} initialInvitations={invitations} />
+      <PartnerTeamSection partnerId={partner.id} initialMembers={team} initialInvitations={invitations} roles={roles} />
 
       <PartnerFormDialog open={editOpen} onClose={() => setEditOpen(false)} partner={editablePartner} />
       <ConfirmDialog
