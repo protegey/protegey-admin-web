@@ -22,6 +22,8 @@ interface Partner {
   plan: string;
   contactEmail: string | null;
   contactPhone: string | null;
+  contactRole: string | null;
+  contactRoleOther: string | null;
   country: string | null;
   description: string | null;
   rejectionReason: string | null;
@@ -200,6 +202,10 @@ export function PartnerDetailClient({
       <div className="grid grid-cols-2 gap-x-6 gap-y-4 rounded-md border border-border bg-card p-5 sm:grid-cols-3">
         <InfoField label="Contact email" value={partner.contactEmail} />
         <InfoField label="Contact phone" value={partner.contactPhone} />
+        <InfoField
+          label="Contact role"
+          value={partner.contactRole === "other" ? partner.contactRoleOther : partner.contactRole ? formatLabel(partner.contactRole) : null}
+        />
         <InfoField label="Country" value={partner.country} />
         <InfoField label="Created" value={new Date(partner.createdAt).toLocaleDateString()} />
         <InfoField label="Activated" value={partner.activatedAt ? new Date(partner.activatedAt).toLocaleDateString() : null} />

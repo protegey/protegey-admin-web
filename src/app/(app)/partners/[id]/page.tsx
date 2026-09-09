@@ -18,6 +18,8 @@ interface Partner {
   plan: string;
   contactEmail: string | null;
   contactPhone: string | null;
+  contactRole: string | null;
+  contactRoleOther: string | null;
   country: string | null;
   description: string | null;
   rejectionReason: string | null;
