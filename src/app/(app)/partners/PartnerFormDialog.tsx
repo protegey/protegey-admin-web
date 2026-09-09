@@ -166,6 +166,16 @@ export function PartnerFormDialog({
                     </option>
                   ))}
                 </select>
+                <select name="plan" required defaultValue="" className={inputClass}>
+                  <option value="" disabled>
+                    Plan
+                  </option>
+                  {PARTNER_PLANS.map((plan) => (
+                    <option key={plan.value} value={plan.value}>
+                      {plan.label}
+                    </option>
+                  ))}
+                </select>
                 <CountrySelect name="country" />
                 <input
                   name="description"

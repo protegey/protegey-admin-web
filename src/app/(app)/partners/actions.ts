@@ -14,6 +14,7 @@ export async function createPartnerAction(
 ): Promise<PartnerFormState> {
   const name = String(formData.get("name") ?? "").trim();
   const type = String(formData.get("type") ?? "");
+  const plan = String(formData.get("plan") ?? "").trim();
   const country = String(formData.get("country") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const adminFirstName = String(formData.get("adminFirstName") ?? "").trim();
@@ -26,6 +27,7 @@ export async function createPartnerAction(
   if (
     !name ||
     !type ||
+    !plan ||
     !country ||
     !description ||
     !adminFirstName ||
@@ -46,6 +48,7 @@ export async function createPartnerAction(
       body: {
         name,
         type,
+        plan,
         country,
         description,
         adminFirstName,
