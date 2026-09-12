@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Dialog } from "@/components/Dialog";
 import { CountrySelect } from "@/components/CountrySelect";
+import { COUNTRY_DIAL_CODES } from "@/lib/countries";
 import { createPartnerAction, updatePartnerAction, type PartnerFormState } from "./actions";
 
 const PARTNER_TYPES = [
@@ -76,10 +77,63 @@ export function PartnerFormDialog({
   const formRef = useRef<HTMLFormElement>(null);
   const [adminRole, setAdminRole] = useState("");
 
+  // Pays sélectionné + numéros alignés sur son indicatif (ex. CM → +237).
+  const [countryCode, setCountryCode] = useState<string | null>(partner?.country ?? null);
+  const [adminPhone, setAdminPhone] = useState("");
+  const [contactPhone, setContactPhone] = useState(partner?.contactPhone ?? "");
+  const prevPrefixRef = useRef<string>("");
+
+  // Réinitialise les champs contrôlés à chaque ouverture / changement de partenaire.
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    if (open) {
+      setCountryCode(partner?.country ?? null);
+      setAdminPhone("");
+      setContactPhone(partner?.contactPhone ?? "");
+      const code = partner?.country ? COUNTRY_DIAL_CODES[partner.country] : undefined;
+      prevPrefixRef.current = code ? `+${code}` : "";
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, partner?.id]);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  const dialPrefix = countryCode && COUNTRY_DIAL_CODES[countryCode] ? `+${COUNTRY_DIAL_CODES[countryCode]}` : "";
+  const phonePlaceholder = dialPrefix ? `${dialPrefix} XX XXX XX XX` : "Phone";
+
+  function applyPrefixToPhone(current: string, newPrefix: string, oldPrefix: string): string {
+    if (!current.trim()) {
+      return `${newPrefix} `;
+    }
+    if (oldPrefix && current.startsWith(oldPrefix)) {
+      return newPrefix + current.slice(oldPrefix.length);
+    }
+    if (!current.startsWith("+")) {
+      return `${newPrefix} ${current.replace(/^0+/, "")}`;
+    }
+    return current;
+  }
+
+  function handleCountryChange(code: string | null) {
+    const newPrefix = code && COUNTRY_DIAL_CODES[code] ? `+${COUNTRY_DIAL_CODES[code]}` : "";
+    const oldPrefix = prevPrefixRef.current;
+    setCountryCode(code);
+    prevPrefixRef.current = newPrefix;
+    if (!newPrefix) {
+      return;
+    }
+    setAdminPhone((current) => applyPrefixToPhone(current, newPrefix, oldPrefix));
+    setContactPhone((current) => applyPrefixToPhone(current, newPrefix, oldPrefix));
+  }
+
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (state.success) {
       toast.success(isEditMode ? "Partner updated." : "Partner created — the administrator will receive an email to set up their account.");
       formRef.current?.reset();
+      setCountryCode(null);
+      setAdminPhone("");
+      setContactPhone("");
+      prevPrefixRef.current = "";
       router.refresh();
       onClose();
     } else if (state.error) {
@@ -87,6 +141,7 @@ export function PartnerFormDialog({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   return (
     <Dialog
@@ -127,7 +182,7 @@ export function PartnerFormDialog({
                 </option>
               ))}
             </select>
-            <CountrySelect name="country" defaultValue={partner.country} />
+            <CountrySelect name="country" defaultValue={partner.country} onChange={handleCountryChange} />
             <input
               name="contactEmail"
               type="email"
@@ -135,13 +190,21 @@ export function PartnerFormDialog({
               defaultValue={partner.contactEmail ?? undefined}
               className={inputClass}
             />
-            <input
-              name="contactPhone"
-              type="text"
-              placeholder="Contact phone (optional)"
-              defaultValue={partner.contactPhone ?? undefined}
-              className={inputClass}
-            />
+            <div className="relative">
+              {dialPrefix ? (
+                <span className="absolute top-1/2 left-3 -translate-y-1/2 rounded bg-muted px-1.5 py-0.5 font-mono text-xs font-semibold text-muted-foreground">
+                  {dialPrefix}
+                </span>
+              ) : null}
+              <input
+                name="contactPhone"
+                type="text"
+                placeholder={dialPrefix ? `${dialPrefix} XX XXX XX XX` : "Contact phone (optional)"}
+                value={contactPhone}
+                onChange={(e) => setContactPhone(e.target.value)}
+                className={`${inputClass} w-full ${dialPrefix ? "pl-16" : ""}`}
+              />
+            </div>
             <input
               name="description"
               type="text"
@@ -176,7 +239,7 @@ export function PartnerFormDialog({
                     </option>
                   ))}
                 </select>
-                <CountrySelect name="country" />
+                <CountrySelect name="country" onChange={handleCountryChange} />
                 <input
                   name="description"
                   type="text"
@@ -193,7 +256,29 @@ export function PartnerFormDialog({
                 <input name="adminFirstName" type="text" placeholder="First name" required className={inputClass} />
                 <input name="adminLastName" type="text" placeholder="Last name" required className={inputClass} />
                 <input name="adminEmail" type="email" placeholder="Email" required className={inputClass} />
-                <input name="adminPhone" type="text" placeholder="Phone" required className={inputClass} />
+                <div className="flex flex-col gap-1">
+                  <div className="relative">
+                    {dialPrefix ? (
+                      <span className="absolute top-1/2 left-3 -translate-y-1/2 rounded bg-muted px-1.5 py-0.5 font-mono text-xs font-semibold text-muted-foreground">
+                        {dialPrefix}
+                      </span>
+                    ) : null}
+                    <input
+                      name="adminPhone"
+                      type="text"
+                      placeholder={phonePlaceholder}
+                      required
+                      value={adminPhone}
+                      onChange={(e) => setAdminPhone(e.target.value)}
+                      className={`${inputClass} w-full ${dialPrefix ? "pl-16" : ""}`}
+                    />
+                  </div>
+                  {dialPrefix ? (
+                    <p className="text-xs text-muted-foreground">
+                      Indicatif {dialPrefix} appliqué depuis le pays de l&apos;organisation.
+                    </p>
+                  ) : null}
+                </div>
                 <select
                   name="adminRole"
                   required

@@ -31,13 +31,14 @@ interface PaginatedPartners {
 export default async function PartnersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; search?: string }>;
+  searchParams: Promise<{ page?: string; search?: string; status?: string }>;
 }) {
-  const { page: pageParam, search } = await searchParams;
+  const { page: pageParam, search, status } = await searchParams;
   const page = Math.max(1, Number(pageParam) || 1);
 
   const query = new URLSearchParams({ page: String(page), limit: "20" });
   if (search) query.set("search", search);
+  if (status && status !== "all") query.set("status", status);
 
   const result = await apiFetch<PaginatedPartners>(`/partners?${query.toString()}`);
 
@@ -48,6 +49,7 @@ export default async function PartnersPage({
         page={result.page}
         totalPages={result.totalPages}
         total={result.total}
+        initialStatus={status && status !== "all" ? status : "all"}
       />
     </Suspense>
   );

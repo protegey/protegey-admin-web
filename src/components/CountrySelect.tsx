@@ -8,10 +8,12 @@ export function CountrySelect({
   name,
   defaultValue,
   placeholder = "Select a country",
+  onChange,
 }: {
   name: string;
   defaultValue?: string | null;
   placeholder?: string;
+  onChange?: (code: string | null) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -62,6 +64,7 @@ export function CountrySelect({
     setSelectedCode(code);
     setOpen(false);
     setQuery("");
+    onChange?.(code);
   }
 
   function handleKeyDown(event: React.KeyboardEvent) {

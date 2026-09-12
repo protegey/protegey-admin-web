@@ -3,11 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, Eye, ChevronLeft, ChevronRight } from "lucide-react";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { Plus, Pencil, Search, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import { PartnerFormDialog, type EditablePartner } from "./PartnerFormDialog";
-import { deletePartnerAction } from "./actions";
 
 interface Partner {
   id: string;
@@ -31,6 +28,16 @@ const STATUS_STYLES: Record<string, string> = {
   rejected: "bg-destructive/10 text-destructive",
 };
 
+const STATUS_OPTIONS = [
+  { value: "all", label: "All statuses" },
+  { value: "pending_verification", label: "Pending verification" },
+  { value: "pending", label: "Pending" },
+  { value: "active", label: "Active" },
+  { value: "suspended", label: "Suspended" },
+  { value: "inactive", label: "Inactive" },
+  { value: "rejected", label: "Rejected" },
+];
+
 function formatLabel(value: string): string {
   return value
     .split("_")
@@ -46,6 +53,7 @@ export function PartnersClient({
   heading = "Partners",
   description = "Institutions onboarded onto Protegey — fintechs, banks, telcos and regulators.",
   illustration,
+  initialStatus = "all",
 }: {
   partners: Partner[];
   page: number;
@@ -54,15 +62,17 @@ export function PartnersClient({
   heading?: string;
   description?: string;
   illustration?: React.ReactNode;
+  initialStatus?: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [searchInput, setSearchInput] = useState(searchParams.get("search") ?? "");
+  const [statusFilter, setStatusFilter] = useState(
+    initialStatus ?? searchParams.get("status") ?? "all",
+  );
   const [dialogPartner, setDialogPartner] = useState<EditablePartner | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<Partner | null>(null);
-  const [deletePending, setDeletePending] = useState(false);
 
   function openCreateDialog() {
     setDialogPartner(null);
@@ -105,18 +115,16 @@ export function PartnersClient({
     });
   }
 
-  async function handleDelete() {
-    if (!deleteTarget) return;
-    setDeletePending(true);
-    const result = await deletePartnerAction(deleteTarget.id);
-    setDeletePending(false);
-    if (result.error) {
-      toast.error(result.error);
-      return;
-    }
-    toast.success("Partner deleted.");
-    setDeleteTarget(null);
-    router.refresh();
+  function handleStatusChange(next: string) {
+    setStatusFilter(next);
+    updateParams((params) => {
+      if (next && next !== "all") {
+        params.set("status", next);
+      } else {
+        params.delete("status");
+      }
+      params.set("page", "1");
+    });
   }
 
   return (
@@ -139,24 +147,40 @@ export function PartnersClient({
         </button>
       </div>
 
-      <form onSubmit={submitSearch} className="flex max-w-sm items-center gap-2">
-        <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="text"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Search by name, email, phone or country…"
-            className="w-full rounded-md border border-border bg-background py-2 pl-8 pr-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
-        <button
-          type="submit"
-          className="rounded-md border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-        >
-          Search
-        </button>
-      </form>
+      <div className="flex flex-wrap items-center gap-2">
+        <form onSubmit={submitSearch} className="flex max-w-sm flex-1 items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Search by name, email, phone or country…"
+              className="w-full rounded-md border border-border bg-background py-2 pl-8 pr-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+          <button
+            type="submit"
+            className="rounded-md border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+          >
+            Search
+          </button>
+        </form>
+        <label className="flex items-center gap-2 text-sm text-muted-foreground">
+          Status
+          <select
+            value={statusFilter}
+            onChange={(e) => handleStatusChange(e.target.value)}
+            className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+          >
+            {STATUS_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
 
       <div className="overflow-hidden rounded-md border border-border">
         <table className="w-full text-left text-sm">
@@ -209,14 +233,6 @@ export function PartnersClient({
                       <Pencil className="size-3.5" />
                       Edit
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => setDeleteTarget(partner)}
-                      className="inline-flex items-center gap-1 rounded-md border border-destructive/30 px-2.5 py-1 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10"
-                    >
-                      <Trash2 className="size-3.5" />
-                      Delete
-                    </button>
                   </div>
                 </td>
               </tr>
@@ -261,15 +277,6 @@ export function PartnersClient({
       ) : null}
 
       <PartnerFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} partner={dialogPartner} />
-      <ConfirmDialog
-        open={deleteTarget !== null}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={handleDelete}
-        title="Delete this partner?"
-        description="This removes the partner from every list and blocks their team from signing in. Records are kept for audit purposes."
-        confirmPhrase={deleteTarget?.name ?? ""}
-        pending={deletePending}
-      />
     </div>
   );
 }

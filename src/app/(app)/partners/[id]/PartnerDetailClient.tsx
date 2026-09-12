@@ -3,13 +3,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Pencil, Trash2 } from "lucide-react";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { Pencil } from "lucide-react";
 import { ConfirmActionDialog } from "@/components/ConfirmActionDialog";
 import { PartnerDetailIllustration } from "@/components/PartnerDetailIllustration";
 import { PartnerFormDialog, type EditablePartner } from "../PartnerFormDialog";
 import { decidePartner, getPartnerDocuments, type PartnerDocument } from "../documents-actions";
-import { deletePartnerAction } from "../actions";
 import type { TeamMember, PendingInvitation, AssignableRole } from "../team-actions";
 import { DocumentReviewRow } from "./DocumentReviewRow";
 import { PartnerTeamSection } from "./PartnerTeamSection";
@@ -73,8 +71,6 @@ export function PartnerDetailClient({
   const [partner, setPartner] = useState(initialPartner);
   const [documents, setDocuments] = useState(initialDocuments);
   const [editOpen, setEditOpen] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deletePending, setDeletePending] = useState(false);
   const [decisionReason, setDecisionReason] = useState("");
   const [confirmDecision, setConfirmDecision] = useState<"approve" | "reject" | null>(null);
   const [decisionPending, setDecisionPending] = useState(false);
@@ -130,18 +126,6 @@ export function PartnerDetailClient({
     }
   }
 
-  async function handleDelete() {
-    setDeletePending(true);
-    const result = await deletePartnerAction(partner.id);
-    setDeletePending(false);
-    if (result.error) {
-      toast.error(result.error);
-      return;
-    }
-    toast.success("Partner deleted.");
-    router.push("/partners");
-  }
-
   const editablePartner: EditablePartner = {
     id: partner.id,
     name: partner.name,
@@ -180,14 +164,6 @@ export function PartnerDetailClient({
           >
             <Pencil className="size-3.5" />
             Edit
-          </button>
-          <button
-            type="button"
-            onClick={() => setDeleteOpen(true)}
-            className="flex items-center gap-1.5 rounded-md border border-destructive/30 px-3 py-1.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
-          >
-            <Trash2 className="size-3.5" />
-            Delete
           </button>
         </div>
       </div>
@@ -253,15 +229,6 @@ export function PartnerDetailClient({
       <PartnerTeamSection partnerId={partner.id} initialMembers={team} initialInvitations={invitations} roles={roles} />
 
       <PartnerFormDialog open={editOpen} onClose={() => setEditOpen(false)} partner={editablePartner} />
-      <ConfirmDialog
-        open={deleteOpen}
-        onClose={() => setDeleteOpen(false)}
-        onConfirm={handleDelete}
-        title="Delete this partner?"
-        description="This removes the partner from every list and blocks their team from signing in. Records are kept for audit purposes."
-        confirmPhrase={partner.name}
-        pending={deletePending}
-      />
 
       <ConfirmActionDialog
         open={confirmDecision === "approve"}
