@@ -113,3 +113,18 @@ export async function restoreSanction(id: string) {
   revalidatePath("/sanctions");
   return { success: true };
 }
+
+export async function updateSanction(
+  id: string,
+  data: { name?: string; aliases?: string[]; notes?: string }
+) {
+  const headers = await authHeaders();
+  const res = await fetch(`${BACKEND_API_URL}/admin/sanctions/${id}`, {
+    method: "PATCH",
+    headers: { ...headers, "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new ApiError(res.status, await res.text());
+  revalidatePath("/sanctions");
+  return res.json();
+}
