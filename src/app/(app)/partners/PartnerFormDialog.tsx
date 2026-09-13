@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Dialog } from "@/components/Dialog";
 import { CountrySelect } from "@/components/CountrySelect";
 import { COUNTRY_DIAL_CODES } from "@/lib/countries";
-import { createPartnerAction, updatePartnerAction, type PartnerFormState } from "./actions";
+import { createPartnerAction, updatePartnerAction, type PartnerFormState, type AssignableRole } from "./actions";
 
 const PARTNER_TYPES = [
   { value: "fintech", label: "Fintech" },
@@ -22,14 +22,6 @@ const PARTNER_PLANS = [
   { value: "professional", label: "Professional" },
   { value: "business", label: "Business" },
   { value: "enterprise", label: "Enterprise" },
-];
-
-const CONTACT_ROLES = [
-  { value: "ceo", label: "CEO" },
-  { value: "cto", label: "CTO" },
-  { value: "coo", label: "COO" },
-  { value: "head_of_risk_and_compliance", label: "Head of Risk and Compliance" },
-  { value: "other", label: "Other (specify)" },
 ];
 
 export interface EditablePartner {
@@ -64,11 +56,13 @@ export function PartnerFormDialog({
   open,
   onClose,
   partner,
+  roles,
 }: {
   open: boolean;
   onClose: () => void;
   /** null = create mode, otherwise editing this partner. */
   partner: EditablePartner | null;
+  roles: AssignableRole[];
 }) {
   const router = useRouter();
   const isEditMode = partner !== null;
@@ -289,11 +283,12 @@ export function PartnerFormDialog({
                   <option value="" disabled>
                     Role
                   </option>
-                  {CONTACT_ROLES.map((role) => (
-                    <option key={role.value} value={role.value}>
-                      {role.label}
+                  {roles.map((role) => (
+                    <option key={role.id} value={role.name}>
+                      {role.displayName}
                     </option>
                   ))}
+                  <option value="other">Other (specify)</option>
                 </select>
                 {adminRole === "other" ? (
                   <input

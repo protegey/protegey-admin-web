@@ -8,6 +8,16 @@ export interface PartnerFormState {
   success?: boolean;
 }
 
+export interface AssignableRole {
+  id: string;
+  name: string;
+  displayName: string;
+}
+
+export async function getAssignableRoles(): Promise<AssignableRole[]> {
+  return apiFetch<AssignableRole[]>("/roles?scope=partner");
+}
+
 export async function createPartnerAction(
   _prevState: PartnerFormState,
   formData: FormData,

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Plus, Pencil, Search, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import { PartnerFormDialog, type EditablePartner } from "./PartnerFormDialog";
+import type { AssignableRole } from "./actions";
 
 interface Partner {
   id: string;
@@ -54,6 +55,7 @@ export function PartnersClient({
   description = "Institutions onboarded onto Protegey — fintechs, banks, telcos and regulators.",
   illustration,
   initialStatus = "all",
+  roles,
 }: {
   partners: Partner[];
   page: number;
@@ -63,6 +65,7 @@ export function PartnersClient({
   description?: string;
   illustration?: React.ReactNode;
   initialStatus?: string;
+  roles: AssignableRole[];
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -276,7 +279,7 @@ export function PartnersClient({
         </div>
       ) : null}
 
-      <PartnerFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} partner={dialogPartner} />
+      <PartnerFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} partner={dialogPartner} roles={roles} />
     </div>
   );
 }

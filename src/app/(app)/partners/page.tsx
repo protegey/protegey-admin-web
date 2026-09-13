@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { apiFetch } from "@/lib/api";
 import { PartnersClient } from "./PartnersClient";
+import { getAssignableRoles } from "./actions";
 
 export const metadata: Metadata = {
   title: "Partners — Protegey Admin",
@@ -40,7 +41,10 @@ export default async function PartnersPage({
   if (search) query.set("search", search);
   if (status && status !== "all") query.set("status", status);
 
-  const result = await apiFetch<PaginatedPartners>(`/partners?${query.toString()}`);
+  const [result, roles] = await Promise.all([
+    apiFetch<PaginatedPartners>(`/partners?${query.toString()}`),
+    getAssignableRoles(),
+  ]);
 
   return (
     <Suspense>
@@ -50,6 +54,7 @@ export default async function PartnersPage({
         totalPages={result.totalPages}
         total={result.total}
         initialStatus={status && status !== "all" ? status : "all"}
+        roles={roles}
       />
     </Suspense>
   );
