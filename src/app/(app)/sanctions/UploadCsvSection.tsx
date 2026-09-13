@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { previewCsv, importCsv } from "./actions";
-import type { PreviewResult } from "./actions";
+import type { PreviewResult } from "./types";
 
 interface Props {
   onImported: () => void;

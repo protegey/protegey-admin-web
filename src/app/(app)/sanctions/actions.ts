@@ -2,6 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { getAccessToken } from "@/lib/session";
+import type {
+  PaginatedSanctions,
+  SanctionsStats,
+  ImportResult,
+  PreviewResult,
+} from "./types";
 
 const BACKEND_API_URL = process.env.BACKEND_API_URL ?? "http://localhost:3000";
 
@@ -22,57 +28,6 @@ async function authHeaders(): Promise<Record<string, string>> {
   }
   return headers;
 }
-
-// ── Data types ────────────────────────────────────────────────────────────────
-
-export interface SanctionsEntity {
-  id: string;
-  name: string;
-  normalizedName: string;
-  type: string;
-  source: string;
-  sourceId: string | null;
-  aliases: string[];
-  dateOfBirth: string | null;
-  nationality: string | null;
-  listingDate: string | null;
-  delistedAt: string | null;
-  notes: string | null;
-  createdAt: string;
-}
-
-export interface PaginatedSanctions {
-  data: SanctionsEntity[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
-
-export interface SanctionsStats {
-  total: number;
-  active: number;
-  delisted: number;
-  byType: { type: string; count: number }[];
-  bySource: { source: string; count: number }[];
-}
-
-export interface ImportResult {
-  imported: number;
-  updated: number;
-  skipped: number;
-  rejected: number;
-  merged: number;
-  totalRows: number;
-}
-
-export interface PreviewResult {
-  valid: Record<string, unknown>[];
-  rejected: { rowNumber: number; reason: string; raw: string }[];
-  totalRows: number;
-}
-
-// ── Server actions ────────────────────────────────────────────────────────────
 
 export async function getSanctions(
   page: number = 1,

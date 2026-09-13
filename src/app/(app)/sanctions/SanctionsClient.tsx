@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { StatsCards } from "./StatsCards";
 import { SanctionsTable } from "./SanctionsTable";
 import { UploadCsvSection } from "./UploadCsvSection";
-import type { SanctionsEntity, SanctionsStats } from "./actions";
+import type { SanctionsEntity, SanctionsStats } from "./types";
 
 interface Props {
   sanctions: SanctionsEntity[];

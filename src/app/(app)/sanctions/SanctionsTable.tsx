@@ -1,7 +1,7 @@
 "use client";
 
 import { deleteSanction, restoreSanction } from "./actions";
-import type { SanctionsEntity } from "./actions";
+import type { SanctionsEntity } from "./types";
 
 interface Props {
   sanctions: SanctionsEntity[];
