@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { apiFetch } from "@/lib/api";
 import { PendingKybIllustration } from "@/components/PendingKybIllustration";
 import { PartnersClient } from "../PartnersClient";
+import { getAssignableRoles } from "../actions";
 
 export const metadata: Metadata = {
   title: "Partner Verification — Protegey Admin",
@@ -41,6 +42,7 @@ export default async function PendingKybPage({
   if (search) query.set("search", search);
 
   const result = await apiFetch<PaginatedPartners>(`/partners?${query.toString()}`);
+  const roles = await getAssignableRoles();
 
   return (
     <Suspense>
@@ -52,6 +54,7 @@ export default async function PendingKybPage({
         heading="Partner Verification"
         description="Partners still waiting on document verification before they can be activated."
         illustration={<PendingKybIllustration className="h-20 w-20 shrink-0" />}
+        roles={roles}
       />
     </Suspense>
   );

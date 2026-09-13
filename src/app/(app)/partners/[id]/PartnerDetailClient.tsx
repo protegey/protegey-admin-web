@@ -228,7 +228,7 @@ export function PartnerDetailClient({
 
       <PartnerTeamSection partnerId={partner.id} initialMembers={team} initialInvitations={invitations} roles={roles} />
 
-      <PartnerFormDialog open={editOpen} onClose={() => setEditOpen(false)} partner={editablePartner} />
+      <PartnerFormDialog open={editOpen} onClose={() => setEditOpen(false)} partner={editablePartner} roles={roles} />
 
       <ConfirmActionDialog
         open={confirmDecision === "approve"}
