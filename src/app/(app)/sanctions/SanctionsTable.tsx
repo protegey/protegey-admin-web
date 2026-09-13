@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil, X, Check } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { deleteSanction, restoreSanction, updateSanction } from "./actions";
 import type { SanctionsEntity } from "./types";
 
@@ -74,90 +74,106 @@ function CountryCell({ code }: { code: string | null }) {
   );
 }
 
+function EditDialog({
+  open,
+  title,
+  onClose,
+  onSave,
+  saving,
+  children,
+}: {
+  open: boolean;
+  title: string;
+  onClose: () => void;
+  onSave: () => void;
+  saving: boolean;
+  children: React.ReactNode;
+}) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
+      <div className="mx-4 w-full max-w-md rounded-lg border border-border bg-card p-5 shadow-lg" onClick={(e) => e.stopPropagation()}>
+        <p className="mb-4 text-sm font-semibold text-foreground">{title}</p>
+        {children}
+        <div className="mt-5 flex justify-end gap-2">
+          <button onClick={onClose} className="rounded-md border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted">
+            Annuler
+          </button>
+          <button
+            onClick={onSave}
+            disabled={saving}
+            className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+          >
+            {saving ? "Enregistrement..." : "Enregistrer"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function NotesCell({ sanction, onSaved }: { sanction: SanctionsEntity; onSaved: () => void }) {
-  const [editing, setEditing] = useState(false);
+  const [open, setOpen] = useState(false);
   const [value, setValue] = useState(sanction.notes ?? "");
   const [saving, setSaving] = useState(false);
+
+  function openDialog() {
+    setValue(sanction.notes ?? "");
+    setOpen(true);
+  }
 
   async function save() {
     setSaving(true);
     await updateSanction(sanction.id, { notes: value || undefined });
     setSaving(false);
-    setEditing(false);
+    setOpen(false);
     onSaved();
   }
 
-  if (editing) {
-    return (
-      <td className="px-4 py-2">
-        <div className="flex items-center gap-1">
-          <input
-            autoFocus
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            className="w-40 rounded border border-border bg-background px-2 py-1 text-sm"
-            onKeyDown={(e) => e.key === "Enter" && save()}
-          />
-          <button onClick={save} disabled={saving} className="text-green-600 hover:text-green-700"><Check className="size-4" /></button>
-          <button onClick={() => { setEditing(false); setValue(sanction.notes ?? ""); }} className="text-muted-foreground hover:text-foreground"><X className="size-4" /></button>
+  return (
+    <>
+      <td className="max-w-48 px-4 py-3">
+        <div className="group flex items-center gap-1">
+          <span className="truncate text-sm text-muted-foreground">{sanction.notes ?? "—"}</span>
+          <button onClick={openDialog} className="opacity-0 group-hover:opacity-100 transition-opacity">
+            <Pencil className="size-3 text-muted-foreground" />
+          </button>
         </div>
       </td>
-    );
-  }
 
-  return (
-    <td className="max-w-48 px-4 py-3">
-      <div className="group flex items-center gap-1">
-        <span className="truncate text-sm text-muted-foreground">{sanction.notes ?? "—"}</span>
-        <button onClick={() => setEditing(true)} className="opacity-0 group-hover:opacity-100 transition-opacity"><Pencil className="size-3 text-muted-foreground" /></button>
-      </div>
-    </td>
+      <EditDialog open={open} title="Modifier la note" onClose={() => setOpen(false)} onSave={save} saving={saving}>
+        <textarea
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder="Note..."
+          rows={4}
+          autoFocus
+          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+        />
+      </EditDialog>
+    </>
   );
 }
 
 function NameCell({ sanction, onSaved }: { sanction: SanctionsEntity; onSaved: () => void }) {
-  const [editing, setEditing] = useState(false);
+  const [open, setOpen] = useState(false);
   const [name, setName] = useState(sanction.name);
   const [aliasesStr, setAliasesStr] = useState(sanction.aliases?.join(", ") ?? "");
   const [saving, setSaving] = useState(false);
+
+  function openDialog() {
+    setName(sanction.name);
+    setAliasesStr(sanction.aliases?.join(", ") ?? "");
+    setOpen(true);
+  }
 
   async function save() {
     setSaving(true);
     const aliases = aliasesStr.split(",").map((a) => a.trim()).filter(Boolean);
     await updateSanction(sanction.id, { name, aliases });
     setSaving(false);
-    setEditing(false);
+    setOpen(false);
     onSaved();
-  }
-
-  if (editing) {
-    return (
-      <td className="px-4 py-2" colSpan={2}>
-        <div className="flex flex-col gap-1.5">
-          <input
-            autoFocus
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Name"
-            className="w-full rounded border border-border bg-background px-2 py-1 text-sm font-medium"
-          />
-          <input
-            value={aliasesStr}
-            onChange={(e) => setAliasesStr(e.target.value)}
-            placeholder="Aliases (comma separated)"
-            className="w-full rounded border border-border bg-background px-2 py-1 text-sm"
-          />
-          <div className="flex items-center gap-1">
-            <button onClick={save} disabled={saving} className="rounded bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground hover:bg-primary/90">
-              {saving ? "Saving..." : "Save"}
-            </button>
-            <button onClick={() => { setEditing(false); setName(sanction.name); setAliasesStr(sanction.aliases?.join(", ") ?? ""); }} className="rounded px-2 py-0.5 text-xs text-muted-foreground hover:text-foreground">
-              Cancel
-            </button>
-          </div>
-        </div>
-      </td>
-    );
   }
 
   return (
@@ -165,12 +181,37 @@ function NameCell({ sanction, onSaved }: { sanction: SanctionsEntity; onSaved: (
       <td className="px-4 py-3">
         <div className="group flex items-center gap-1.5">
           <span className="font-medium">{sanction.name}</span>
-          <button onClick={() => setEditing(true)} className="opacity-0 group-hover:opacity-100 transition-opacity"><Pencil className="size-3 text-muted-foreground" /></button>
+          <button onClick={openDialog} className="opacity-0 group-hover:opacity-100 transition-opacity">
+            <Pencil className="size-3 text-muted-foreground" />
+          </button>
         </div>
       </td>
       <td className="max-w-48 truncate px-4 py-3 text-muted-foreground">
         {sanction.aliases?.length ? sanction.aliases.join(", ") : "—"}
       </td>
+
+      <EditDialog open={open} title="Modifier le nom et les alias" onClose={() => setOpen(false)} onSave={save} saving={saving}>
+        <div className="flex flex-col gap-3">
+          <div>
+            <label className="mb-1 block text-xs font-medium text-muted-foreground">Nom</label>
+            <input
+              autoFocus
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-muted-foreground">Alias (séparés par des virgules)</label>
+            <input
+              value={aliasesStr}
+              onChange={(e) => setAliasesStr(e.target.value)}
+              placeholder="Ali1, Ali2, ..."
+              className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+        </div>
+      </EditDialog>
     </>
   );
 }
@@ -192,7 +233,7 @@ function ConfirmDialog({ open, title, description, onConfirm, onCancel, confirmL
         <p className="mt-1.5 text-sm text-muted-foreground">{description}</p>
         <div className="mt-4 flex justify-end gap-2">
           <button onClick={onCancel} className="rounded-md border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted">
-            Cancel
+            Annuler
           </button>
           <button
             onClick={onConfirm}
@@ -300,7 +341,6 @@ export function SanctionsTable({ sanctions, page, totalPages, total, onPageChang
           </table>
         </div>
 
-        {/* Pagination */}
         <div className="flex items-center justify-between border-t border-border px-4 py-3">
           <p className="text-sm text-muted-foreground">
             Showing {sanctions.length} of {total.toLocaleString()} entries
