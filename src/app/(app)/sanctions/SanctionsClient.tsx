@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { RefreshCw } from "lucide-react";
 import { StatsCards } from "./StatsCards";
 import { SanctionsTable } from "./SanctionsTable";
 import { UploadCsvSection } from "./UploadCsvSection";
@@ -51,12 +52,21 @@ export function SanctionsClient({
     <div className="flex flex-col gap-8">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Sanctions List</h1>
-        <button
-          onClick={() => setShowUpload(!showUpload)}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-        >
-          {showUpload ? "Close Upload" : "Import CSV"}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => router.refresh()}
+            className="flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium hover:bg-muted"
+          >
+            <RefreshCw className="size-4" />
+            Refresh
+          </button>
+          <button
+            onClick={() => setShowUpload(!showUpload)}
+            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          >
+            {showUpload ? "Close Upload" : "Import CSV"}
+          </button>
+        </div>
       </div>
 
       <StatsCards stats={stats} />
