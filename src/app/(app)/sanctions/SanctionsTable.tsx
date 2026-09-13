@@ -11,6 +11,7 @@ interface Props {
   totalPages: number;
   total: number;
   onPageChange: (page: number) => void;
+  loading?: boolean;
 }
 
 const COUNTRY_FLAGS: Record<string, string> = {
@@ -247,7 +248,7 @@ function ConfirmDialog({ open, title, description, onConfirm, onCancel, confirmL
   );
 }
 
-export function SanctionsTable({ sanctions, page, totalPages, total, onPageChange }: Props) {
+export function SanctionsTable({ sanctions, page, totalPages, total, onPageChange, loading }: Props) {
   const [confirmAction, setConfirmAction] = useState<{ id: string; action: "delete" | "restore" } | null>(null);
 
   function formatDate(d: string | null): string {
@@ -268,7 +269,15 @@ export function SanctionsTable({ sanctions, page, totalPages, total, onPageChang
 
   return (
     <>
-      <div className="rounded-lg border border-border bg-card">
+      <div className="relative rounded-lg border border-border bg-card">
+        {loading && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/60">
+            <div className="flex items-center gap-2">
+              <div className="size-5 animate-spin rounded-full border-2 border-muted border-t-primary" />
+              <span className="text-sm text-muted-foreground">Chargement...</span>
+            </div>
+          </div>
+        )}
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
@@ -349,7 +358,7 @@ export function SanctionsTable({ sanctions, page, totalPages, total, onPageChang
             <button
               onClick={() => onPageChange(page - 1)}
               disabled={page <= 1}
-              className="rounded-md border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted disabled:opacity-50"
+              className="cursor-pointer rounded-md border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted disabled:cursor-default disabled:opacity-50"
             >
               Previous
             </button>
@@ -359,7 +368,7 @@ export function SanctionsTable({ sanctions, page, totalPages, total, onPageChang
             <button
               onClick={() => onPageChange(page + 1)}
               disabled={page >= totalPages}
-              className="rounded-md border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted disabled:opacity-50"
+              className="cursor-pointer rounded-md border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted disabled:cursor-default disabled:opacity-50"
             >
               Next
             </button>

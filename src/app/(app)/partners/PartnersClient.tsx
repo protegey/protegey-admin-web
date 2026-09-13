@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Plus, Pencil, Search, Eye, ChevronLeft, ChevronRight } from "lucide-react";
@@ -70,6 +70,7 @@ export function PartnersClient({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
   const [searchInput, setSearchInput] = useState(searchParams.get("search") ?? "");
   const [statusFilter, setStatusFilter] = useState(
     initialStatus ?? searchParams.get("status") ?? "all",
@@ -99,7 +100,9 @@ export function PartnersClient({
   function updateParams(mutate: (params: URLSearchParams) => void) {
     const params = new URLSearchParams(searchParams.toString());
     mutate(params);
-    router.push(`${pathname}?${params.toString()}`);
+    startTransition(() => {
+      router.push(`${pathname}?${params.toString()}`);
+    });
   }
 
   function goToPage(nextPage: number) {
@@ -185,7 +188,15 @@ export function PartnersClient({
         </label>
       </div>
 
-      <div className="overflow-hidden rounded-md border border-border">
+      <div className="relative overflow-hidden rounded-md border border-border">
+        {isPending && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60">
+            <div className="flex items-center gap-2">
+              <div className="size-5 animate-spin rounded-full border-2 border-muted border-t-primary" />
+              <span className="text-sm text-muted-foreground">Chargement...</span>
+            </div>
+          </div>
+        )}
         <table className="w-full text-left text-sm">
           <thead className="bg-muted text-muted-foreground">
             <tr>
@@ -261,7 +272,7 @@ export function PartnersClient({
               type="button"
               disabled={page <= 1}
               onClick={() => goToPage(page - 1)}
-              className="flex items-center gap-1 rounded-md border border-border px-3 py-1.5 text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex cursor-pointer items-center gap-1 rounded-md border border-border px-3 py-1.5 text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
             >
               <ChevronLeft className="size-4" />
               Previous
@@ -270,7 +281,7 @@ export function PartnersClient({
               type="button"
               disabled={page >= totalPages}
               onClick={() => goToPage(page + 1)}
-              className="flex items-center gap-1 rounded-md border border-border px-3 py-1.5 text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex cursor-pointer items-center gap-1 rounded-md border border-border px-3 py-1.5 text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
             >
               Next
               <ChevronRight className="size-4" />

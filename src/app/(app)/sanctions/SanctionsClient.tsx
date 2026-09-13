@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { RefreshCw } from "lucide-react";
 import { StatsCards } from "./StatsCards";
@@ -32,6 +32,7 @@ export function SanctionsClient({
   initialIncludeDelisted,
 }: Props) {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [search, setSearch] = useState(initialSearch);
   const [type, setType] = useState(initialType);
   const [source, setSource] = useState(initialSource);
@@ -45,7 +46,9 @@ export function SanctionsClient({
     if (type !== "all") params.set("type", type);
     if (source !== "all") params.set("source", source);
     if (includeDelisted) params.set("delisted", "true");
-    router.push(`/sanctions?${params.toString()}`);
+    startTransition(() => {
+      router.push(`/sanctions?${params.toString()}`);
+    });
   }
 
   return (
@@ -54,10 +57,10 @@ export function SanctionsClient({
         <h1 className="text-2xl font-bold">Sanctions List</h1>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => router.refresh()}
+            onClick={() => startTransition(() => router.refresh())}
             className="flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium hover:bg-muted"
           >
-            <RefreshCw className="size-4" />
+            <RefreshCw className={`size-4 ${isPending ? "animate-spin" : ""}`} />
             Refresh
           </button>
           <button
@@ -147,6 +150,7 @@ export function SanctionsClient({
         totalPages={totalPages}
         total={total}
         onPageChange={(p) => applyFilters(p)}
+        loading={isPending}
       />
     </div>
   );
