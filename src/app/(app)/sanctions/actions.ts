@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getAccessToken } from "@/lib/session";
+import { ApiError } from "./errors";
 import type {
   PaginatedSanctions,
   SanctionsStats,
@@ -10,15 +11,6 @@ import type {
 } from "./types";
 
 const BACKEND_API_URL = process.env.BACKEND_API_URL ?? "http://localhost:3000";
-
-export class ApiError extends Error {
-  constructor(
-    public status: number,
-    message: string,
-  ) {
-    super(message);
-  }
-}
 
 async function authHeaders(): Promise<Record<string, string>> {
   const headers: Record<string, string> = {};
