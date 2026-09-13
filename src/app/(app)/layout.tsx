@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Handshake, Users } from "lucide-react";
+import { Handshake, ShieldCheck, Users } from "lucide-react";
 import { Sidebar, type NavItem } from "@/components/Sidebar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SignOutButton } from "@/components/SignOutButton";
@@ -12,6 +12,13 @@ const NAV_ITEMS: NavItem[] = [
     children: [
       { href: "/partners", label: "Partners" },
       { href: "/partners/pending-kyb", label: "Partner Verification" },
+    ],
+  },
+  {
+    label: "Sanctions",
+    icon: <ShieldCheck className="size-4" />,
+    children: [
+      { href: "/sanctions", label: "Sanctions List" },
     ],
   },
 ];
