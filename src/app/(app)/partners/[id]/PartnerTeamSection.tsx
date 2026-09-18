@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { ConfirmActionDialog } from "@/components/ConfirmActionDialog";
+import { useLang } from "@/lib/i18n/LangProvider";
 import {
   getPartnerTeam,
   getPartnerPendingInvitations,
@@ -25,6 +26,7 @@ export function PartnerTeamSection({
   initialInvitations: PendingInvitation[];
   roles: AssignableRole[];
 }) {
+  const { t } = useLang();
   const [members, setMembers] = useState(initialMembers);
   const [invitations, setInvitations] = useState(initialInvitations);
   const [resendingId, setResendingId] = useState<string | null>(null);
@@ -47,7 +49,7 @@ export function PartnerTeamSection({
     if (result.error) {
       toast.error(result.error);
     } else {
-      toast.success("Invitation resent.");
+      toast.success(t("partnersTeamInvitationResentToast"));
       reload();
     }
   }
@@ -61,18 +63,18 @@ export function PartnerTeamSection({
       toast.error(result.error);
       return;
     }
-    toast.success(statusTarget.isActive ? "Agent blocked." : "Agent unblocked.");
+    toast.success(statusTarget.isActive ? t("partnersTeamAgentBlockedToast") : t("partnersTeamAgentUnblockedToast"));
     setStatusTarget(null);
     reload();
   }
 
   return (
     <div className="rounded-md border border-border bg-card p-5">
-      <p className="mb-3 text-sm font-semibold text-foreground">Team</p>
+      <p className="mb-3 text-sm font-semibold text-foreground">{t("partnersTeamTitle")}</p>
 
       {invitations.length > 0 ? (
         <div className="mb-4 flex flex-col gap-2">
-          <p className="text-xs font-medium text-muted-foreground">Pending invitations</p>
+          <p className="text-xs font-medium text-muted-foreground">{t("partnersPendingInvitationsLabel")}</p>
           {invitations.map((invitation) => (
             <div key={invitation.id} className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2">
               <div className="min-w-0">
@@ -91,7 +93,7 @@ export function PartnerTeamSection({
                   onClick={() => handleResend(invitation.id)}
                   className="rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-60"
                 >
-                  {resendingId === invitation.id ? "Sending…" : "Resend"}
+                  {resendingId === invitation.id ? t("sendingEllipsis") : t("resendButton")}
                 </button>
               </div>
             </div>
@@ -116,7 +118,7 @@ export function PartnerTeamSection({
                   member.isActive ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"
                 }`}
               >
-                {member.isActive ? "Active" : "Blocked"}
+                {member.isActive ? t("partnersTeamStatusActive") : t("partnersTeamStatusBlocked")}
               </span>
               <button
                 type="button"
@@ -127,26 +129,26 @@ export function PartnerTeamSection({
                     : "border-border text-foreground hover:bg-muted"
                 }`}
               >
-                {member.isActive ? "Block" : "Unblock"}
+                {member.isActive ? t("partnersTeamBlockButton") : t("partnersTeamUnblockButton")}
               </button>
             </div>
           </div>
         ))}
-        {members.length === 0 ? <p className="text-sm text-muted-foreground">No agents yet.</p> : null}
+        {members.length === 0 ? <p className="text-sm text-muted-foreground">{t("partnersTeamNoAgents")}</p> : null}
       </div>
 
       <ConfirmActionDialog
         open={statusTarget !== null}
         onClose={() => setStatusTarget(null)}
         onConfirm={handleToggleStatus}
-        title={statusTarget?.isActive ? "Block this agent?" : "Unblock this agent?"}
+        title={statusTarget?.isActive ? t("partnersTeamBlockConfirmTitle") : t("partnersTeamUnblockConfirmTitle")}
         description={
           statusTarget?.isActive
-            ? "They will no longer be able to sign in or do anything in the organization."
-            : "They will regain access to the organization."
+            ? t("partnersTeamBlockConfirmDescription")
+            : t("partnersTeamUnblockConfirmDescription")
         }
-        confirmLabel={statusTarget?.isActive ? "Block" : "Unblock"}
-        pendingLabel={statusTarget?.isActive ? "Blocking…" : "Unblocking…"}
+        confirmLabel={statusTarget?.isActive ? t("partnersTeamBlockButton") : t("partnersTeamUnblockButton")}
+        pendingLabel={statusTarget?.isActive ? t("partnersTeamBlockingEllipsis") : t("partnersTeamUnblockingEllipsis")}
         pending={statusPending}
         variant={statusTarget?.isActive ? "destructive" : "primary"}
       />

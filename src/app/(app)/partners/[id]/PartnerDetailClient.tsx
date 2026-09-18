@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { Pencil } from "lucide-react";
 import { ConfirmActionDialog } from "@/components/ConfirmActionDialog";
 import { PartnerDetailIllustration } from "@/components/PartnerDetailIllustration";
+import { useLang } from "@/lib/i18n/LangProvider";
+import type { StringKey } from "@/lib/i18n/strings";
 import { PartnerFormDialog, type EditablePartner } from "../PartnerFormDialog";
 import { decidePartner, getPartnerDocuments, type PartnerDocument } from "../documents-actions";
 import type { TeamMember, PendingInvitation, AssignableRole } from "../team-actions";
@@ -38,6 +40,23 @@ const STATUS_STYLES: Record<string, string> = {
   rejected: "bg-destructive/10 text-destructive",
 };
 
+const STATUS_LABEL_KEYS: Record<string, StringKey> = {
+  active: "partnersStatusActive",
+  pending: "partnersStatusPending",
+  pending_verification: "partnersStatusPendingVerification",
+  suspended: "partnersStatusSuspended",
+  inactive: "partnersStatusInactive",
+  rejected: "partnersStatusRejected",
+};
+
+const TYPE_LABEL_KEYS: Record<string, StringKey> = {
+  fintech: "partnerTypeFintech",
+  bank: "partnerTypeBank",
+  telco: "partnerTypeTelco",
+  regulator: "partnerTypeRegulator",
+  other: "partnerTypeOther",
+};
+
 function formatLabel(value: string): string {
   return value
     .split("_")
@@ -67,6 +86,7 @@ export function PartnerDetailClient({
   invitations: PendingInvitation[];
   roles: AssignableRole[];
 }) {
+  const { t } = useLang();
   const router = useRouter();
   const [partner, setPartner] = useState(initialPartner);
   const [documents, setDocuments] = useState(initialDocuments);
@@ -103,7 +123,7 @@ export function PartnerDetailClient({
     if (result.error) {
       toast.error(result.error);
     } else {
-      toast.success("Partner approved and activated.");
+      toast.success(t("partnersApprovedToast"));
       closeDecisionConfirm();
       router.refresh();
     }
@@ -111,7 +131,7 @@ export function PartnerDetailClient({
 
   async function handleRejectPartner() {
     if (decisionReason.trim().length < 5) {
-      toast.error("Please explain why this partner is being rejected.");
+      toast.error(t("partnersRejectReasonRequiredToast"));
       return;
     }
     setDecisionPending(true);
@@ -120,7 +140,7 @@ export function PartnerDetailClient({
     if (result.error) {
       toast.error(result.error);
     } else {
-      toast.success("Partner application rejected.");
+      toast.success(t("partnersRejectedToast"));
       closeDecisionConfirm();
       router.refresh();
     }
@@ -150,10 +170,13 @@ export function PartnerDetailClient({
                   STATUS_STYLES[partner.status] ?? "bg-muted text-muted-foreground"
                 }`}
               >
-                {formatLabel(partner.status)}
+                {STATUS_LABEL_KEYS[partner.status] ? t(STATUS_LABEL_KEYS[partner.status]) : formatLabel(partner.status)}
               </span>
             </div>
-            <p className="text-sm text-muted-foreground">{formatLabel(partner.type)} · {formatLabel(partner.plan)}</p>
+            <p className="text-sm text-muted-foreground">
+              {TYPE_LABEL_KEYS[partner.type] ? t(TYPE_LABEL_KEYS[partner.type]) : formatLabel(partner.type)} ·{" "}
+              {formatLabel(partner.plan)}
+            </p>
           </div>
         </div>
         <div className="flex shrink-0 gap-2">
@@ -163,33 +186,33 @@ export function PartnerDetailClient({
             className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
           >
             <Pencil className="size-3.5" />
-            Edit
+            {t("editButton")}
           </button>
         </div>
       </div>
 
       {partner.status === "rejected" && partner.rejectionReason ? (
         <div className="rounded-md border border-destructive/30 bg-destructive/10 p-4">
-          <p className="text-sm font-semibold text-destructive">Application rejected</p>
+          <p className="text-sm font-semibold text-destructive">{t("partnersApplicationRejectedTitle")}</p>
           <p className="mt-1 text-sm text-destructive">{partner.rejectionReason}</p>
         </div>
       ) : null}
 
       <div className="grid grid-cols-2 gap-x-6 gap-y-4 rounded-md border border-border bg-card p-5 sm:grid-cols-3">
-        <InfoField label="Contact email" value={partner.contactEmail} />
-        <InfoField label="Contact phone" value={partner.contactPhone} />
+        <InfoField label={t("partnersContactEmailLabel")} value={partner.contactEmail} />
+        <InfoField label={t("partnersContactPhoneLabel")} value={partner.contactPhone} />
         <InfoField
-          label="Contact role"
+          label={t("partnersContactRoleLabel")}
           value={partner.contactRole === "other" ? partner.contactRoleOther : partner.contactRole ? formatLabel(partner.contactRole) : null}
         />
-        <InfoField label="Country" value={partner.country} />
-        <InfoField label="Created" value={new Date(partner.createdAt).toLocaleDateString()} />
-        <InfoField label="Activated" value={partner.activatedAt ? new Date(partner.activatedAt).toLocaleDateString() : null} />
-        <InfoField label="Description" value={partner.description} />
+        <InfoField label={t("partnersCountryLabel")} value={partner.country} />
+        <InfoField label={t("partnersCreatedLabel")} value={new Date(partner.createdAt).toLocaleDateString()} />
+        <InfoField label={t("partnersActivatedLabel")} value={partner.activatedAt ? new Date(partner.activatedAt).toLocaleDateString() : null} />
+        <InfoField label={t("partnersDescriptionLabel")} value={partner.description} />
       </div>
 
       <div className="rounded-md border border-border bg-card p-5">
-        <p className="mb-3 text-sm font-semibold text-foreground">KYB documents</p>
+        <p className="mb-3 text-sm font-semibold text-foreground">{t("partnersKybDocumentsTitle")}</p>
         <div className="flex flex-col gap-3">
           {documents.map((document) => (
             <DocumentReviewRow key={document.id} partnerId={partner.id} document={document} onChanged={reloadDocuments} />
@@ -198,28 +221,26 @@ export function PartnerDetailClient({
 
         {canDecide ? (
           <div className="mt-5 border-t border-border pt-4">
-            <p className="mb-1 text-xs font-medium text-muted-foreground">Partner application decision</p>
+            <p className="mb-1 text-xs font-medium text-muted-foreground">{t("partnersDecisionLabel")}</p>
             {!allApproved ? (
-              <p className="mb-3 text-xs text-muted-foreground">
-                Every document must be approved before this partner can be activated.
-              </p>
+              <p className="mb-3 text-xs text-muted-foreground">{t("partnersDecisionHelpText")}</p>
             ) : null}
             <div className="flex gap-2">
               <button
                 type="button"
                 disabled={!allApproved}
                 onClick={() => setConfirmDecision("approve")}
-                title={!allApproved ? "All documents must be approved first" : undefined}
+                title={!allApproved ? t("partnersApprovePartnerDisabledTitle") : undefined}
                 className="rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                Approve partner
+                {t("partnersApprovePartnerButton")}
               </button>
               <button
                 type="button"
                 onClick={() => setConfirmDecision("reject")}
                 className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted"
               >
-                Reject partner
+                {t("partnersRejectPartnerButton")}
               </button>
             </div>
           </div>
@@ -234,10 +255,10 @@ export function PartnerDetailClient({
         open={confirmDecision === "approve"}
         onClose={closeDecisionConfirm}
         onConfirm={handleApprovePartner}
-        title={`Activate ${partner.name}?`}
-        description="They'll get full access to the partner portal and an email confirming activation."
-        confirmLabel="Approve partner"
-        pendingLabel="Approving…"
+        title={`${t("partnersActivateConfirmTitleBefore")}${partner.name}${t("partnersActivateConfirmTitleAfter")}`}
+        description={t("partnersActivateConfirmDescription")}
+        confirmLabel={t("partnersApprovePartnerButton")}
+        pendingLabel={t("partnersApprovingEllipsis")}
         pending={decisionPending}
       />
 
@@ -245,10 +266,10 @@ export function PartnerDetailClient({
         open={confirmDecision === "reject"}
         onClose={closeDecisionConfirm}
         onConfirm={handleRejectPartner}
-        title={`Reject ${partner.name}'s application?`}
-        description="They'll need to resubmit every document. This reason is shown to them by email."
-        confirmLabel="Confirm rejection"
-        pendingLabel="Rejecting…"
+        title={`${t("partnersRejectConfirmTitleBefore")}${partner.name}${t("partnersRejectConfirmTitleAfter")}`}
+        description={t("partnersRejectConfirmDescription")}
+        confirmLabel={t("partnersConfirmRejectionLabel")}
+        pendingLabel={t("partnersRejectingEllipsis")}
         pending={decisionPending}
         confirmDisabled={decisionReason.trim().length < 5}
         variant="destructive"
@@ -256,7 +277,7 @@ export function PartnerDetailClient({
         <textarea
           value={decisionReason}
           onChange={(e) => setDecisionReason(e.target.value)}
-          placeholder="Explain why this partner's application is being rejected…"
+          placeholder={t("partnersRejectPlaceholder")}
           rows={3}
           autoFocus
           className="w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"

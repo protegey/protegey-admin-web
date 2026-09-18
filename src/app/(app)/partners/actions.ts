@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { apiFetch, ApiError } from "@/lib/api";
+import { getLang } from "@/lib/i18n/lang";
+import { t } from "@/lib/i18n/strings";
 
 export interface PartnerFormState {
   error?: string;
@@ -22,6 +24,7 @@ export async function createPartnerAction(
   _prevState: PartnerFormState,
   formData: FormData,
 ): Promise<PartnerFormState> {
+  const lang = await getLang();
   const name = String(formData.get("name") ?? "").trim();
   const type = String(formData.get("type") ?? "");
   const plan = String(formData.get("plan") ?? "").trim();
@@ -46,10 +49,10 @@ export async function createPartnerAction(
     !adminPhone ||
     !adminRole
   ) {
-    return { error: "Please fill in every field." };
+    return { error: t(lang, "partnersFillEveryFieldError") };
   }
   if (adminRole === "other" && !adminRoleOther) {
-    return { error: "Please specify the primary contact's role." };
+    return { error: t(lang, "partnersSpecifyContactRoleError") };
   }
 
   try {
@@ -73,7 +76,7 @@ export async function createPartnerAction(
     if (error instanceof ApiError) {
       return { error: error.message };
     }
-    return { error: "Something went wrong. Please try again." };
+    return { error: t(lang, "somethingWentWrongRetryMessage") };
   }
 
   revalidatePath("/partners");
@@ -81,13 +84,14 @@ export async function createPartnerAction(
 }
 
 export async function deletePartnerAction(partnerId: string): Promise<PartnerFormState> {
+  const lang = await getLang();
   try {
     await apiFetch(`/partners/${partnerId}`, { method: "DELETE" });
   } catch (error) {
     if (error instanceof ApiError) {
       return { error: error.message };
     }
-    return { error: "Something went wrong. Please try again." };
+    return { error: t(lang, "somethingWentWrongRetryMessage") };
   }
 
   revalidatePath("/partners");
@@ -99,6 +103,7 @@ export async function updatePartnerAction(
   _prevState: PartnerFormState,
   formData: FormData,
 ): Promise<PartnerFormState> {
+  const lang = await getLang();
   const name = String(formData.get("name") ?? "").trim();
   const type = String(formData.get("type") ?? "");
   const plan = String(formData.get("plan") ?? "").trim();
@@ -108,7 +113,7 @@ export async function updatePartnerAction(
   const description = String(formData.get("description") ?? "").trim();
 
   if (!name || !type) {
-    return { error: "Please fill in the partner name and type." };
+    return { error: t(lang, "partnersFillNameTypeError") };
   }
 
   try {
@@ -128,7 +133,7 @@ export async function updatePartnerAction(
     if (error instanceof ApiError) {
       return { error: error.message };
     }
-    return { error: "Something went wrong. Please try again." };
+    return { error: t(lang, "somethingWentWrongRetryMessage") };
   }
 
   revalidatePath("/partners");

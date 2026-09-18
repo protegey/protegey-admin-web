@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { apiFetch, ApiError } from "@/lib/api";
+import { getLang } from "@/lib/i18n/lang";
+import { t } from "@/lib/i18n/strings";
 
 export interface CreateAdminState {
   error?: string;
@@ -27,20 +29,22 @@ export async function getPendingAdminInvitations(): Promise<PendingAdminInvitati
 }
 
 export async function resendAdminInvitationAction(invitationId: string): Promise<ActionResult> {
+  const lang = await getLang();
   try {
     await apiFetch(`/admins/invitations/${invitationId}/resend`, { method: "POST" });
   } catch (error) {
-    return { error: error instanceof ApiError ? error.message : "Something went wrong." };
+    return { error: error instanceof ApiError ? error.message : t(lang, "somethingWentWrongMessage") };
   }
   revalidatePath("/admins");
   return { success: true };
 }
 
 export async function sendAdminPasswordResetAction(userId: string): Promise<ActionResult> {
+  const lang = await getLang();
   try {
     await apiFetch(`/admins/${userId}/reset-password`, { method: "POST" });
   } catch (error) {
-    return { error: error instanceof ApiError ? error.message : "Something went wrong." };
+    return { error: error instanceof ApiError ? error.message : t(lang, "somethingWentWrongMessage") };
   }
   return { success: true };
 }
@@ -56,16 +60,17 @@ export async function updateAdminInvitationAction(
   _prevState: UpdateInvitationState,
   formData: FormData,
 ): Promise<UpdateInvitationState> {
+  const lang = await getLang();
   const firstName = String(formData.get("firstName") ?? "").trim();
   const lastName = String(formData.get("lastName") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
   const roleIds = formData.getAll("roleIds").map(String);
 
   if (!firstName || !lastName || !email) {
-    return { error: "All fields are required." };
+    return { error: t(lang, "allFieldsRequiredError") };
   }
   if (roleIds.length === 0) {
-    return { error: "Select at least one role for this administrator." };
+    return { error: t(lang, "adminsSelectRoleError") };
   }
 
   try {
@@ -74,7 +79,7 @@ export async function updateAdminInvitationAction(
       body: { firstName, lastName, email, roleIds },
     });
   } catch (error) {
-    return { error: error instanceof ApiError ? error.message : "Something went wrong." };
+    return { error: error instanceof ApiError ? error.message : t(lang, "somethingWentWrongMessage") };
   }
   revalidatePath("/admins");
   return { success: true };
@@ -84,16 +89,17 @@ export async function createAdminAction(
   _prevState: CreateAdminState,
   formData: FormData,
 ): Promise<CreateAdminState> {
+  const lang = await getLang();
   const firstName = String(formData.get("firstName") ?? "").trim();
   const lastName = String(formData.get("lastName") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
   const roleIds = formData.getAll("roleIds").map(String);
 
   if (!firstName || !lastName || !email) {
-    return { error: "All fields are required." };
+    return { error: t(lang, "allFieldsRequiredError") };
   }
   if (roleIds.length === 0) {
-    return { error: "Select at least one role for this administrator." };
+    return { error: t(lang, "adminsSelectRoleError") };
   }
 
   try {
@@ -102,7 +108,7 @@ export async function createAdminAction(
     if (error instanceof ApiError) {
       return { error: error.message };
     }
-    return { error: "Something went wrong. Please try again." };
+    return { error: t(lang, "somethingWentWrongRetryMessage") };
   }
 
   revalidatePath("/admins");

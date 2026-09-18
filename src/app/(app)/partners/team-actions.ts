@@ -1,6 +1,8 @@
 "use server";
 
 import { apiFetch, ApiError } from "@/lib/api";
+import { getLang } from "@/lib/i18n/lang";
+import { t } from "@/lib/i18n/strings";
 
 export interface TeamMember {
   id: string;
@@ -44,10 +46,11 @@ export async function getAssignablePartnerRoles(): Promise<AssignableRole[]> {
 }
 
 export async function resendPartnerInvitation(partnerId: string, invitationId: string): Promise<ActionResult> {
+  const lang = await getLang();
   try {
     await apiFetch(`/partners/${partnerId}/invitations/${invitationId}/resend`, { method: "POST" });
   } catch (error) {
-    return { error: error instanceof ApiError ? error.message : "Something went wrong." };
+    return { error: error instanceof ApiError ? error.message : t(lang, "somethingWentWrongMessage") };
   }
   return { success: true };
 }
@@ -64,16 +67,17 @@ export async function updatePartnerInvitationAction(
   _prevState: UpdateInvitationState,
   formData: FormData,
 ): Promise<UpdateInvitationState> {
+  const lang = await getLang();
   const firstName = String(formData.get("firstName") ?? "").trim();
   const lastName = String(formData.get("lastName") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
   const roleIds = formData.getAll("roleIds").map(String);
 
   if (!firstName || !lastName || !email) {
-    return { error: "All fields are required." };
+    return { error: t(lang, "allFieldsRequiredError") };
   }
   if (roleIds.length === 0) {
-    return { error: "Select at least one role for this agent." };
+    return { error: t(lang, "partnersTeamSelectRoleError") };
   }
 
   try {
@@ -82,7 +86,7 @@ export async function updatePartnerInvitationAction(
       body: { firstName, lastName, email, roleIds },
     });
   } catch (error) {
-    return { error: error instanceof ApiError ? error.message : "Something went wrong." };
+    return { error: error instanceof ApiError ? error.message : t(lang, "somethingWentWrongMessage") };
   }
   return { success: true };
 }
@@ -92,10 +96,11 @@ export async function setPartnerAgentStatus(
   userId: string,
   isActive: boolean,
 ): Promise<ActionResult> {
+  const lang = await getLang();
   try {
     await apiFetch(`/partners/${partnerId}/team/${userId}/status`, { method: "PATCH", body: { isActive } });
   } catch (error) {
-    return { error: error instanceof ApiError ? error.message : "Something went wrong." };
+    return { error: error instanceof ApiError ? error.message : t(lang, "somethingWentWrongMessage") };
   }
   return { success: true };
 }

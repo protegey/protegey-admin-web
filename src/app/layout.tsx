@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter, IBM_Plex_Sans } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AppToaster } from "@/components/AppToaster";
+import { LangProvider } from "@/lib/i18n/LangProvider";
+import { getLang } from "@/lib/i18n/lang";
 import "./globals.css";
 
 const inter = Inter({
@@ -29,17 +31,20 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const lang = await getLang();
   return (
     <html
-      lang="en"
+      lang={lang}
       className={`${inter.variable} ${plexSans.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
-          {children}
-          <AppToaster />
+          <LangProvider initialLang={lang}>
+            {children}
+            <AppToaster />
+          </LangProvider>
         </ThemeProvider>
       </body>
     </html>

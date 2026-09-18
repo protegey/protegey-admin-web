@@ -2,12 +2,15 @@ import type { Metadata } from "next";
 import { LoginForm } from "./LoginForm";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Logo } from "@/components/Logo";
+import { getLang } from "@/lib/i18n/lang";
+import { t } from "@/lib/i18n/strings";
 
 export const metadata: Metadata = {
   title: "Sign in — Protegey Admin",
 };
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const lang = await getLang();
   return (
     <div className="relative flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6">
       <div className="absolute top-4 right-4">
@@ -19,10 +22,8 @@ export default function LoginPage() {
           <div className="flex flex-col items-center gap-4">
             <Logo />
             <div className="space-y-1 text-center">
-              <h1 className="text-xl font-semibold text-foreground">Admin sign in</h1>
-              <p className="text-sm text-muted-foreground">
-                Continental Fraud Intelligence Engine
-              </p>
+              <h1 className="text-xl font-semibold text-foreground">{t(lang, "loginTitle")}</h1>
+              <p className="text-sm text-muted-foreground">{t(lang, "loginSubtitle")}</p>
             </div>
           </div>
 

@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { X } from "lucide-react";
+import { useLang } from "@/lib/i18n/LangProvider";
 
 export function Dialog({
   open,
@@ -16,6 +17,7 @@ export function Dialog({
   description?: string;
   children: React.ReactNode;
 }) {
+  const { t } = useLang();
   useEffect(() => {
     if (!open) return;
     function handleKeyDown(event: KeyboardEvent) {
@@ -44,7 +46,7 @@ export function Dialog({
             type="button"
             onClick={onClose}
             className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            aria-label="Close dialog"
+            aria-label={t("closeDialogAria")}
           >
             <X className="size-4" />
           </button>

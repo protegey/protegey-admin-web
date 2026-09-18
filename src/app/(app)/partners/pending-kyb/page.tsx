@@ -4,6 +4,8 @@ import { apiFetch } from "@/lib/api";
 import { PendingKybIllustration } from "@/components/PendingKybIllustration";
 import { PartnersClient } from "../PartnersClient";
 import { getAssignableRoles } from "../actions";
+import { getLang } from "@/lib/i18n/lang";
+import { t } from "@/lib/i18n/strings";
 
 export const metadata: Metadata = {
   title: "Partner Verification — Protegey Admin",
@@ -41,8 +43,11 @@ export default async function PendingKybPage({
   const query = new URLSearchParams({ page: String(page), limit: "20", status: "pending_verification" });
   if (search) query.set("search", search);
 
-  const result = await apiFetch<PaginatedPartners>(`/partners?${query.toString()}`);
-  const roles = await getAssignableRoles();
+  const [result, roles, lang] = await Promise.all([
+    apiFetch<PaginatedPartners>(`/partners?${query.toString()}`),
+    getAssignableRoles(),
+    getLang(),
+  ]);
 
   return (
     <Suspense>
@@ -51,8 +56,8 @@ export default async function PendingKybPage({
         page={result.page}
         totalPages={result.totalPages}
         total={result.total}
-        heading="Partner Verification"
-        description="Partners still waiting on document verification before they can be activated."
+        heading={t(lang, "navPartnerVerification")}
+        description={t(lang, "partnersPendingKybDescription")}
         illustration={<PendingKybIllustration className="h-20 w-20 shrink-0" />}
         roles={roles}
       />

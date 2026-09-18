@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useLang } from "@/lib/i18n/LangProvider";
 import { previewCsv, importCsv } from "./actions";
 import type { PreviewResult } from "./types";
 
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export function UploadCsvSection({ onImported }: Props) {
+  const { t } = useLang();
   const fileRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [source, setSource] = useState("custom");
@@ -33,7 +35,7 @@ export function UploadCsvSection({ onImported }: Props) {
       const result = await previewCsv(file, source);
       setPreview(result);
     } catch (err) {
-      setImportResult(`Preview failed: ${(err as Error).message}`);
+      setImportResult(`${t("sanctionsPreviewFailedPrefix")} ${(err as Error).message}`);
     } finally {
       setLoading(false);
     }
@@ -45,11 +47,11 @@ export function UploadCsvSection({ onImported }: Props) {
     try {
       const result = await importCsv(file, strategy, source);
       setImportResult(
-        `Import complete: ${result.imported} created, ${result.merged} merged, ${result.updated} updated, ${result.skipped} skipped, ${result.rejected} rejected (of ${result.totalRows} total rows)`,
+        `${t("sanctionsImportCompletePrefix")} ${result.imported} ${t("sanctionsImportCreatedWord")}, ${result.merged} ${t("sanctionsImportMergedWord")}, ${result.updated} ${t("sanctionsImportUpdatedWord")}, ${result.skipped} ${t("sanctionsImportSkippedWord")}, ${result.rejected} ${t("sanctionsImportRejectedWord")} (${t("sanctionsImportOfWord")} ${result.totalRows} ${t("sanctionsImportTotalRowsWord")})`,
       );
       onImported();
     } catch (err) {
-      setImportResult(`Import failed: ${(err as Error).message}`);
+      setImportResult(`${t("sanctionsImportFailedPrefix")} ${(err as Error).message}`);
     } finally {
       setLoading(false);
     }
@@ -57,11 +59,11 @@ export function UploadCsvSection({ onImported }: Props) {
 
   return (
     <div className="rounded-lg border border-border bg-card p-6">
-      <h2 className="mb-4 text-lg font-semibold">Import Sanctions CSV</h2>
+      <h2 className="mb-4 text-lg font-semibold">{t("sanctionsUploadTitle")}</h2>
 
       <div className="flex flex-wrap items-end gap-4">
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-muted-foreground">CSV File</label>
+          <label className="text-xs font-medium text-muted-foreground">{t("sanctionsCsvFileLabel")}</label>
           <input
             ref={fileRef}
             type="file"
@@ -71,13 +73,13 @@ export function UploadCsvSection({ onImported }: Props) {
           />
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-muted-foreground">Source</label>
+          <label className="text-xs font-medium text-muted-foreground">{t("sanctionsSourceLabel")}</label>
           <select
             value={source}
             onChange={(e) => setSource(e.target.value)}
             className="rounded-md border border-border bg-background px-3 py-1.5 text-sm"
           >
-            <option value="custom">Custom</option>
+            <option value="custom">{t("sanctionsSourceCustom")}</option>
             <option value="nigsac">NIGSAC</option>
             <option value="ofac">OFAC</option>
             <option value="eu">EU</option>
@@ -86,15 +88,15 @@ export function UploadCsvSection({ onImported }: Props) {
           </select>
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-muted-foreground">Duplicate Strategy</label>
+          <label className="text-xs font-medium text-muted-foreground">{t("sanctionsDuplicateStrategyLabel")}</label>
           <select
             value={strategy}
             onChange={(e) => setStrategy(e.target.value)}
             className="rounded-md border border-border bg-background px-3 py-1.5 text-sm"
           >
-            <option value="skip">Skip</option>
-            <option value="merge">Merge</option>
-            <option value="force">Force overwrite</option>
+            <option value="skip">{t("sanctionsStrategySkip")}</option>
+            <option value="merge">{t("sanctionsStrategyMerge")}</option>
+            <option value="force">{t("sanctionsStrategyForce")}</option>
           </select>
         </div>
         <button
@@ -102,20 +104,20 @@ export function UploadCsvSection({ onImported }: Props) {
           disabled={!file || loading}
           className="rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium hover:bg-muted disabled:opacity-50"
         >
-          Preview
+          {t("sanctionsPreviewButton")}
         </button>
         <button
           onClick={handleImport}
           disabled={!file || loading}
           className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
         >
-          {loading ? "Processing..." : "Import"}
+          {loading ? t("sanctionsProcessingEllipsis") : t("sanctionsImportButton")}
         </button>
       </div>
 
       {file && (
         <p className="mt-2 text-sm text-muted-foreground">
-          File: {file.name} ({(file.size / 1024).toFixed(1)} KB)
+          {t("sanctionsFileLabelPrefix")} {file.name} ({(file.size / 1024).toFixed(1)} {t("sanctionsKbUnit")})
         </p>
       )}
 
@@ -126,16 +128,16 @@ export function UploadCsvSection({ onImported }: Props) {
       {preview && (
         <div className="mt-4 space-y-3">
           <p className="text-sm font-medium">
-            Total rows: {preview.totalRows} | Valid: {preview.valid.length} | Rejected:{" "}
-            {preview.rejected.length}
+            {t("sanctionsTotalRowsLabel")} {preview.totalRows} | {t("sanctionsValidLabel")} {preview.valid.length} |{" "}
+            {t("sanctionsRejectedLabel")} {preview.rejected.length}
           </p>
           {preview.rejected.length > 0 && (
             <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3">
-              <p className="mb-1 text-sm font-medium text-destructive">Rejected rows:</p>
+              <p className="mb-1 text-sm font-medium text-destructive">{t("sanctionsRejectedRowsLabel")}</p>
               <ul className="max-h-32 space-y-1 overflow-y-auto text-xs text-muted-foreground">
                 {preview.rejected.map((r) => (
                   <li key={r.rowNumber}>
-                    Row {r.rowNumber}: {r.reason}
+                    {t("sanctionsRowLabel")} {r.rowNumber}: {r.reason}
                   </li>
                 ))}
               </ul>
@@ -143,7 +145,7 @@ export function UploadCsvSection({ onImported }: Props) {
           )}
           {preview.valid.length > 0 && (
             <div className="rounded-md border border-border p-3">
-              <p className="mb-1 text-sm font-medium">Sample valid rows:</p>
+              <p className="mb-1 text-sm font-medium">{t("sanctionsSampleValidRowsLabel")}</p>
               <ul className="max-h-32 space-y-1 overflow-y-auto text-xs text-muted-foreground">
                 {preview.valid.slice(0, 5).map((r, i) => (
                   <li key={i}>

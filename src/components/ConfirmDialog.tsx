@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AlertTriangle } from "lucide-react";
+import { useLang } from "@/lib/i18n/LangProvider";
 import { Dialog } from "./Dialog";
 
 /**
@@ -17,7 +18,7 @@ export function ConfirmDialog({
   title,
   description,
   confirmPhrase,
-  confirmLabel = "Delete",
+  confirmLabel,
   pending = false,
 }: {
   open: boolean;
@@ -29,8 +30,10 @@ export function ConfirmDialog({
   confirmLabel?: string;
   pending?: boolean;
 }) {
+  const { t } = useLang();
   const [typed, setTyped] = useState("");
   const matches = typed.trim() === confirmPhrase;
+  const resolvedConfirmLabel = confirmLabel ?? t("deleteButton");
 
   function handleClose() {
     setTyped("");
@@ -42,12 +45,13 @@ export function ConfirmDialog({
       <div className="flex flex-col gap-4">
         <div className="flex items-start gap-3 rounded-md border border-destructive/30 bg-destructive/10 p-3">
           <AlertTriangle className="mt-0.5 size-4 shrink-0 text-destructive" />
-          <p className="text-sm text-destructive">This action cannot be undone from this screen.</p>
+          <p className="text-sm text-destructive">{t("cannotBeUndone")}</p>
         </div>
 
         <div>
           <label className="text-xs font-medium text-muted-foreground">
-            Type <span className="font-semibold text-foreground">{confirmPhrase}</span> to confirm
+            {t("typeToConfirmPrefix")} <span className="font-semibold text-foreground">{confirmPhrase}</span>{" "}
+            {t("typeToConfirmSuffix")}
           </label>
           <input
             type="text"
@@ -64,7 +68,7 @@ export function ConfirmDialog({
             onClick={handleClose}
             className="rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
           >
-            Cancel
+            {t("cancel")}
           </button>
           <button
             type="button"
@@ -72,7 +76,7 @@ export function ConfirmDialog({
             onClick={onConfirm}
             className="rounded-md bg-destructive px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {pending ? "Deleting…" : confirmLabel}
+            {pending ? t("deletingEllipsis") : resolvedConfirmLabel}
           </button>
         </div>
       </div>

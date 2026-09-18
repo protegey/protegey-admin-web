@@ -3,11 +3,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, ChevronDown, Globe, Search, X } from "lucide-react";
 import { COUNTRIES, countryFlagEmoji } from "@/lib/countries";
+import { useLang } from "@/lib/i18n/LangProvider";
 
 export function CountrySelect({
   name,
   defaultValue,
-  placeholder = "Select a country",
+  placeholder,
   onChange,
 }: {
   name: string;
@@ -15,6 +16,8 @@ export function CountrySelect({
   placeholder?: string;
   onChange?: (code: string | null) => void;
 }) {
+  const { t } = useLang();
+  const resolvedPlaceholder = placeholder ?? t("countrySelectPlaceholder");
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [highlighted, setHighlighted] = useState(0);
@@ -100,7 +103,7 @@ export function CountrySelect({
           <Globe className="size-4 shrink-0 text-muted-foreground" />
         )}
         <span className={`flex-1 truncate ${selected ? "text-foreground" : "text-muted-foreground"}`}>
-          {selected ? selected.name : placeholder}
+          {selected ? selected.name : resolvedPlaceholder}
         </span>
         {selected ? (
           <span
@@ -111,7 +114,7 @@ export function CountrySelect({
               select(null);
             }}
             className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-            aria-label="Clear country"
+            aria-label={t("countrySelectClearAria")}
           >
             <X className="size-3.5" />
           </span>
@@ -129,7 +132,7 @@ export function CountrySelect({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Search countries…"
+              placeholder={t("countrySelectSearchPlaceholder")}
               className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
             />
             {query ? (
@@ -137,7 +140,7 @@ export function CountrySelect({
                 type="button"
                 onClick={() => setQuery("")}
                 className="shrink-0 rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-                aria-label="Clear search"
+                aria-label={t("countrySelectClearSearchAria")}
               >
                 <X className="size-3.5" />
               </button>
@@ -147,7 +150,7 @@ export function CountrySelect({
           <div ref={listRef} className="scroll-thin max-h-72 overflow-y-auto overscroll-contain p-1.5">
             {filtered.length === 0 ? (
               <p className="px-3 py-6 text-center text-sm text-muted-foreground">
-                No country matches &ldquo;{query}&rdquo;.
+                {t("countrySelectNoMatchBefore")} &ldquo;{query}&rdquo;.
               </p>
             ) : (
               filtered.map((country, index) => (

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import { getLang } from "@/lib/i18n/lang";
+import { t } from "@/lib/i18n/strings";
 import { getPartnerDocuments, type PartnerDocument } from "../documents-actions";
 import { getPartnerTeam, getPartnerPendingInvitations, getAssignablePartnerRoles } from "../team-actions";
 import { PartnerDetailClient } from "./PartnerDetailClient";
@@ -29,12 +31,13 @@ interface Partner {
 
 export default async function PartnerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [partner, documents, team, invitations, roles] = await Promise.all([
+  const [partner, documents, team, invitations, roles, lang] = await Promise.all([
     apiFetch<Partner>(`/partners/${id}`),
     getPartnerDocuments(id) as Promise<PartnerDocument[]>,
     getPartnerTeam(id),
     getPartnerPendingInvitations(id),
     getAssignablePartnerRoles(),
+    getLang(),
   ]);
 
   return (
@@ -44,7 +47,7 @@ export default async function PartnerDetailPage({ params }: { params: Promise<{ 
         className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft className="size-3.5" />
-        Back to partners
+        {t(lang, "partnersBackToPartners")}
       </Link>
       <PartnerDetailClient partner={partner} documents={documents} team={team} invitations={invitations} roles={roles} />
     </div>

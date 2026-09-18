@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Pencil } from "lucide-react";
+import { useLang } from "@/lib/i18n/LangProvider";
 import { deleteSanction, restoreSanction, updateSanction } from "./actions";
 import type { SanctionsEntity } from "./types";
 
@@ -90,6 +91,7 @@ function EditDialog({
   saving: boolean;
   children: React.ReactNode;
 }) {
+  const { t } = useLang();
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
@@ -98,14 +100,14 @@ function EditDialog({
         {children}
         <div className="mt-5 flex justify-end gap-2">
           <button onClick={onClose} className="rounded-md border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted">
-            Annuler
+            {t("cancel")}
           </button>
           <button
             onClick={onSave}
             disabled={saving}
             className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
-            {saving ? "Enregistrement..." : "Enregistrer"}
+            {saving ? t("savingEllipsis") : t("saveButton")}
           </button>
         </div>
       </div>
@@ -114,6 +116,7 @@ function EditDialog({
 }
 
 function NotesCell({ sanction, onSaved }: { sanction: SanctionsEntity; onSaved: () => void }) {
+  const { t } = useLang();
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(sanction.notes ?? "");
   const [saving, setSaving] = useState(false);
@@ -142,11 +145,11 @@ function NotesCell({ sanction, onSaved }: { sanction: SanctionsEntity; onSaved: 
         </div>
       </td>
 
-      <EditDialog open={open} title="Modifier la note" onClose={() => setOpen(false)} onSave={save} saving={saving}>
+      <EditDialog open={open} title={t("sanctionsEditNoteDialogTitle")} onClose={() => setOpen(false)} onSave={save} saving={saving}>
         <textarea
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          placeholder="Note..."
+          placeholder={t("sanctionsNotePlaceholder")}
           rows={4}
           autoFocus
           className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
@@ -157,6 +160,7 @@ function NotesCell({ sanction, onSaved }: { sanction: SanctionsEntity; onSaved: 
 }
 
 function NameCell({ sanction, onSaved }: { sanction: SanctionsEntity; onSaved: () => void }) {
+  const { t } = useLang();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(sanction.name);
   const [aliasesStr, setAliasesStr] = useState(sanction.aliases?.join(", ") ?? "");
@@ -191,10 +195,10 @@ function NameCell({ sanction, onSaved }: { sanction: SanctionsEntity; onSaved: (
         {sanction.aliases?.length ? sanction.aliases.join(", ") : "—"}
       </td>
 
-      <EditDialog open={open} title="Modifier le nom et les alias" onClose={() => setOpen(false)} onSave={save} saving={saving}>
+      <EditDialog open={open} title={t("sanctionsEditNameDialogTitle")} onClose={() => setOpen(false)} onSave={save} saving={saving}>
         <div className="flex flex-col gap-3">
           <div>
-            <label className="mb-1 block text-xs font-medium text-muted-foreground">Nom</label>
+            <label className="mb-1 block text-xs font-medium text-muted-foreground">{t("sanctionsNameFieldLabel")}</label>
             <input
               autoFocus
               value={name}
@@ -203,11 +207,11 @@ function NameCell({ sanction, onSaved }: { sanction: SanctionsEntity; onSaved: (
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-muted-foreground">Alias (séparés par des virgules)</label>
+            <label className="mb-1 block text-xs font-medium text-muted-foreground">{t("sanctionsAliasesFieldLabel")}</label>
             <input
               value={aliasesStr}
               onChange={(e) => setAliasesStr(e.target.value)}
-              placeholder="Ali1, Ali2, ..."
+              placeholder={t("sanctionsAliasesPlaceholder")}
               className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
@@ -226,6 +230,7 @@ function ConfirmDialog({ open, title, description, onConfirm, onCancel, confirmL
   confirmLabel: string;
   destructive?: boolean;
 }) {
+  const { t } = useLang();
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onCancel}>
@@ -234,7 +239,7 @@ function ConfirmDialog({ open, title, description, onConfirm, onCancel, confirmL
         <p className="mt-1.5 text-sm text-muted-foreground">{description}</p>
         <div className="mt-4 flex justify-end gap-2">
           <button onClick={onCancel} className="rounded-md border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted">
-            Annuler
+            {t("cancel")}
           </button>
           <button
             onClick={onConfirm}
@@ -248,7 +253,13 @@ function ConfirmDialog({ open, title, description, onConfirm, onCancel, confirmL
   );
 }
 
+const TYPE_LABEL_KEYS: Record<string, "sanctionsTypePerson" | "sanctionsTypeBusiness"> = {
+  person: "sanctionsTypePerson",
+  business: "sanctionsTypeBusiness",
+};
+
 export function SanctionsTable({ sanctions, page, totalPages, total, onPageChange, loading }: Props) {
+  const { t } = useLang();
   const [confirmAction, setConfirmAction] = useState<{ id: string; action: "delete" | "restore" } | null>(null);
 
   function formatDate(d: string | null): string {
@@ -274,7 +285,7 @@ export function SanctionsTable({ sanctions, page, totalPages, total, onPageChang
           <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/60">
             <div className="flex items-center gap-2">
               <div className="size-5 animate-spin rounded-full border-2 border-muted border-t-primary" />
-              <span className="text-sm text-muted-foreground">Chargement...</span>
+              <span className="text-sm text-muted-foreground">{t("loadingEllipsis")}</span>
             </div>
           </div>
         )}
@@ -282,23 +293,23 @@ export function SanctionsTable({ sanctions, page, totalPages, total, onPageChang
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/50">
-                <th className="px-4 py-3 font-medium">Name</th>
-                <th className="px-4 py-3 font-medium">Aliases</th>
-                <th className="px-4 py-3 font-medium">Type</th>
-                <th className="px-4 py-3 font-medium">Source</th>
-                <th className="px-4 py-3 font-medium">Source ID</th>
-                <th className="px-4 py-3 font-medium">Nationality</th>
-                <th className="px-4 py-3 font-medium">Listing Date</th>
-                <th className="px-4 py-3 font-medium">Notes</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Actions</th>
+                <th className="px-4 py-3 font-medium">{t("sanctionsColName")}</th>
+                <th className="px-4 py-3 font-medium">{t("sanctionsColAliases")}</th>
+                <th className="px-4 py-3 font-medium">{t("sanctionsTypeLabel")}</th>
+                <th className="px-4 py-3 font-medium">{t("sanctionsSourceLabel")}</th>
+                <th className="px-4 py-3 font-medium">{t("sanctionsColSourceId")}</th>
+                <th className="px-4 py-3 font-medium">{t("sanctionsColNationality")}</th>
+                <th className="px-4 py-3 font-medium">{t("sanctionsColListingDate")}</th>
+                <th className="px-4 py-3 font-medium">{t("sanctionsColNotes")}</th>
+                <th className="px-4 py-3 font-medium">{t("sanctionsColStatus")}</th>
+                <th className="px-4 py-3 font-medium">{t("sanctionsColActions")}</th>
               </tr>
             </thead>
             <tbody>
               {sanctions.length === 0 ? (
                 <tr>
                   <td colSpan={10} className="px-4 py-8 text-center text-muted-foreground">
-                    No sanctions entries found.
+                    {t("sanctionsEmptyMessage")}
                   </td>
                 </tr>
               ) : (
@@ -307,7 +318,7 @@ export function SanctionsTable({ sanctions, page, totalPages, total, onPageChang
                     <NameCell sanction={s} onSaved={() => onPageChange(page)} />
                     <td className="px-4 py-3">
                       <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${s.type === "person" ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" : "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"}`}>
-                        {s.type}
+                        {TYPE_LABEL_KEYS[s.type] ? t(TYPE_LABEL_KEYS[s.type]) : s.type}
                       </span>
                     </td>
                     <td className="px-4 py-3 uppercase">{s.source}</td>
@@ -318,11 +329,11 @@ export function SanctionsTable({ sanctions, page, totalPages, total, onPageChang
                     <td className="px-4 py-3">
                       {s.delistedAt ? (
                         <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900 dark:text-red-200">
-                          Delisted
+                          {t("sanctionsStatusDelisted")}
                         </span>
                       ) : (
                         <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-200">
-                          Active
+                          {t("sanctionsStatusActive")}
                         </span>
                       )}
                     </td>
@@ -332,14 +343,14 @@ export function SanctionsTable({ sanctions, page, totalPages, total, onPageChang
                           onClick={() => setConfirmAction({ id: s.id, action: "restore" })}
                           className="text-sm text-primary hover:underline"
                         >
-                          Restore
+                          {t("sanctionsRestoreButton")}
                         </button>
                       ) : (
                         <button
                           onClick={() => setConfirmAction({ id: s.id, action: "delete" })}
                           className="text-sm text-destructive hover:underline"
                         >
-                          De-list
+                          {t("sanctionsDelistButton")}
                         </button>
                       )}
                     </td>
@@ -352,7 +363,8 @@ export function SanctionsTable({ sanctions, page, totalPages, total, onPageChang
 
         <div className="flex items-center justify-between border-t border-border px-4 py-3">
           <p className="text-sm text-muted-foreground">
-            Showing {sanctions.length} of {total.toLocaleString()} entries
+            {t("sanctionsShowingPrefix")} {sanctions.length} {t("sanctionsShowingOfWord")} {total.toLocaleString()}{" "}
+            {t("sanctionsShowingEntriesWord")}
           </p>
           <div className="flex items-center gap-2">
             <button
@@ -360,17 +372,17 @@ export function SanctionsTable({ sanctions, page, totalPages, total, onPageChang
               disabled={page <= 1}
               className="cursor-pointer rounded-md border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted disabled:cursor-default disabled:opacity-50"
             >
-              Previous
+              {t("previousPageButton")}
             </button>
             <span className="text-sm text-muted-foreground">
-              Page {page} of {totalPages}
+              {t("pageWord")} {page} {t("ofWord")} {totalPages}
             </span>
             <button
               onClick={() => onPageChange(page + 1)}
               disabled={page >= totalPages}
               className="cursor-pointer rounded-md border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted disabled:cursor-default disabled:opacity-50"
             >
-              Next
+              {t("nextPageButton")}
             </button>
           </div>
         </div>
@@ -378,18 +390,18 @@ export function SanctionsTable({ sanctions, page, totalPages, total, onPageChang
 
       <ConfirmDialog
         open={confirmAction?.action === "delete"}
-        title="De-list this sanctions entry?"
-        description="This will mark the entry as delisted. It can be restored later."
-        confirmLabel="De-list"
+        title={t("sanctionsDelistConfirmTitle")}
+        description={t("sanctionsDelistConfirmDescription")}
+        confirmLabel={t("sanctionsDelistButton")}
         destructive
         onConfirm={handleConfirm}
         onCancel={() => setConfirmAction(null)}
       />
       <ConfirmDialog
         open={confirmAction?.action === "restore"}
-        title="Restore this sanctions entry?"
-        description="This will reactivate the entry and it will appear in screening results again."
-        confirmLabel="Restore"
+        title={t("sanctionsRestoreConfirmTitle")}
+        description={t("sanctionsRestoreConfirmDescription")}
+        confirmLabel={t("sanctionsRestoreButton")}
         onConfirm={handleConfirm}
         onCancel={() => setConfirmAction(null)}
       />

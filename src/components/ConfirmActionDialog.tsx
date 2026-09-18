@@ -1,5 +1,6 @@
 "use client";
 
+import { useLang } from "@/lib/i18n/LangProvider";
 import { Dialog } from "./Dialog";
 
 /**
@@ -32,6 +33,7 @@ export function ConfirmActionDialog({
   variant?: "primary" | "destructive";
   children?: React.ReactNode;
 }) {
+  const { t } = useLang();
   return (
     <Dialog open={open} onClose={onClose} title={title} description={description}>
       <div className="flex flex-col gap-4">
@@ -42,7 +44,7 @@ export function ConfirmActionDialog({
             onClick={onClose}
             className="rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
           >
-            Cancel
+            {t("cancel")}
           </button>
           <button
             type="button"
@@ -52,7 +54,7 @@ export function ConfirmActionDialog({
               variant === "destructive" ? "bg-destructive text-white" : "bg-primary text-primary-foreground"
             }`}
           >
-            {pending ? (pendingLabel ?? "Working…") : confirmLabel}
+            {pending ? (pendingLabel ?? t("workingEllipsis")) : confirmLabel}
           </button>
         </div>
       </div>

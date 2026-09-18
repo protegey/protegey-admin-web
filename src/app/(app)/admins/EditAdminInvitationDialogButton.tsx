@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Pencil } from "lucide-react";
 import { Dialog } from "@/components/Dialog";
 import { RoleMultiSelect } from "@/components/RoleMultiSelect";
+import { useLang } from "@/lib/i18n/LangProvider";
 import { updateAdminInvitationAction, type PendingAdminInvitation, type UpdateInvitationState } from "./actions";
 import type { AssignableRole } from "./page";
 
@@ -13,13 +14,14 @@ const initialState: UpdateInvitationState = {};
 
 function SubmitButton() {
   const { pending } = useFormStatus();
+  const { t } = useLang();
   return (
     <button
       type="submit"
       disabled={pending}
       className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
     >
-      {pending ? "Saving…" : "Save changes"}
+      {pending ? t("savingEllipsis") : t("saveChangesButton")}
     </button>
   );
 }
@@ -31,6 +33,7 @@ export function EditAdminInvitationDialogButton({
   invitation: PendingAdminInvitation;
   roles: AssignableRole[];
 }) {
+  const { t } = useLang();
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const action = updateAdminInvitationAction.bind(null, invitation.id);
@@ -53,21 +56,21 @@ export function EditAdminInvitationDialogButton({
         className="flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted"
       >
         <Pencil className="size-3" />
-        Edit
+        {t("editButton")}
       </button>
 
       <Dialog
         open={open}
         onClose={() => setOpen(false)}
-        title="Edit invitation"
-        description="Changes apply the next time this invitation is sent."
+        title={t("editInvitationDialogTitle")}
+        description={t("editInvitationDialogDescription")}
       >
         <form action={formAction} className="flex flex-col gap-4">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <input
               name="firstName"
               type="text"
-              placeholder="First name"
+              placeholder={t("firstNamePlaceholder")}
               defaultValue={invitation.firstName}
               required
               className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
@@ -75,7 +78,7 @@ export function EditAdminInvitationDialogButton({
             <input
               name="lastName"
               type="text"
-              placeholder="Last name"
+              placeholder={t("lastNamePlaceholder")}
               defaultValue={invitation.lastName}
               required
               className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
@@ -83,7 +86,7 @@ export function EditAdminInvitationDialogButton({
             <input
               name="email"
               type="email"
-              placeholder="Email address"
+              placeholder={t("emailPlaceholder")}
               defaultValue={invitation.email}
               required
               className="sm:col-span-2 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
@@ -91,12 +94,12 @@ export function EditAdminInvitationDialogButton({
           </div>
 
           <div>
-            <p className="mb-1.5 text-xs font-medium text-muted-foreground">Roles</p>
+            <p className="mb-1.5 text-xs font-medium text-muted-foreground">{t("rolesLabel")}</p>
             <RoleMultiSelect roles={roles} defaultSelectedNames={invitation.roles.map((role) => role.name)} />
           </div>
 
           {state.error ? <p className="text-sm text-destructive">{state.error}</p> : null}
-          {state.success ? <p className="text-sm text-primary">Saved.</p> : null}
+          {state.success ? <p className="text-sm text-primary">{t("savedMessage")}</p> : null}
 
           <div className="flex justify-end">
             <SubmitButton />
@@ -106,3 +109,4 @@ export function EditAdminInvitationDialogButton({
     </>
   );
 }
+

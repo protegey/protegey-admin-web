@@ -7,15 +7,19 @@ import { toast } from "sonner";
 import { Dialog } from "@/components/Dialog";
 import { CountrySelect } from "@/components/CountrySelect";
 import { COUNTRY_DIAL_CODES } from "@/lib/countries";
+import { useLang } from "@/lib/i18n/LangProvider";
 import { createPartnerAction, updatePartnerAction, type PartnerFormState, type AssignableRole } from "./actions";
 
-const PARTNER_TYPES = [
-  { value: "fintech", label: "Fintech" },
-  { value: "bank", label: "Bank" },
-  { value: "telco", label: "Telco" },
-  { value: "regulator", label: "Regulator" },
-  { value: "other", label: "Other" },
-];
+function usePartnerTypes() {
+  const { t } = useLang();
+  return [
+    { value: "fintech", label: t("partnerTypeFintech") },
+    { value: "bank", label: t("partnerTypeBank") },
+    { value: "telco", label: t("partnerTypeTelco") },
+    { value: "regulator", label: t("partnerTypeRegulator") },
+    { value: "other", label: t("partnerTypeOther") },
+  ];
+}
 
 const PARTNER_PLANS = [
   { value: "starter", label: "Starter" },
@@ -64,6 +68,8 @@ export function PartnerFormDialog({
   partner: EditablePartner | null;
   roles: AssignableRole[];
 }) {
+  const { t } = useLang();
+  const PARTNER_TYPES = usePartnerTypes();
   const router = useRouter();
   const isEditMode = partner !== null;
   const action = isEditMode ? updatePartnerAction.bind(null, partner.id) : createPartnerAction;
@@ -92,7 +98,7 @@ export function PartnerFormDialog({
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const dialPrefix = countryCode && COUNTRY_DIAL_CODES[countryCode] ? `+${COUNTRY_DIAL_CODES[countryCode]}` : "";
-  const phonePlaceholder = dialPrefix ? `${dialPrefix} XX XXX XX XX` : "Phone";
+  const phonePlaceholder = dialPrefix ? `${dialPrefix} XX XXX XX XX` : t("partnersPhonePlaceholderGeneric");
 
   function applyPrefixToPhone(current: string, newPrefix: string, oldPrefix: string): string {
     if (!current.trim()) {
@@ -122,7 +128,7 @@ export function PartnerFormDialog({
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (state.success) {
-      toast.success(isEditMode ? "Partner updated." : "Partner created — the administrator will receive an email to set up their account.");
+      toast.success(isEditMode ? t("partnersUpdatedToast") : t("partnersCreatedToast"));
       formRef.current?.reset();
       setCountryCode(null);
       setAdminPhone("");
@@ -141,12 +147,8 @@ export function PartnerFormDialog({
     <Dialog
       open={open}
       onClose={onClose}
-      title={isEditMode ? "Edit partner" : "Create a new partner"}
-      description={
-        isEditMode
-          ? undefined
-          : "The admin you name below will receive an email to set their password and sign in to the partner portal."
-      }
+      title={isEditMode ? t("partnersEditDialogTitle") : t("partnersCreateDialogTitle")}
+      description={isEditMode ? undefined : t("partnersCreateDialogDescription")}
     >
       <form ref={formRef} action={formAction} className="flex flex-col gap-4">
         {isEditMode ? (
@@ -154,14 +156,14 @@ export function PartnerFormDialog({
             <input
               name="name"
               type="text"
-              placeholder="Partner name"
+              placeholder={t("partnersNamePlaceholder")}
               defaultValue={partner.name}
               required
               className={inputClass}
             />
             <select name="type" required defaultValue={partner.type} className={inputClass}>
               <option value="" disabled>
-                Partner type
+                {t("partnersTypeSelectPlaceholder")}
               </option>
               {PARTNER_TYPES.map((type) => (
                 <option key={type.value} value={type.value}>
@@ -180,7 +182,7 @@ export function PartnerFormDialog({
             <input
               name="contactEmail"
               type="email"
-              placeholder="Contact email (optional)"
+              placeholder={t("partnersContactEmailOptionalPlaceholder")}
               defaultValue={partner.contactEmail ?? undefined}
               className={inputClass}
             />
@@ -193,7 +195,7 @@ export function PartnerFormDialog({
               <input
                 name="contactPhone"
                 type="text"
-                placeholder={dialPrefix ? `${dialPrefix} XX XXX XX XX` : "Contact phone (optional)"}
+                placeholder={dialPrefix ? `${dialPrefix} XX XXX XX XX` : t("partnersContactPhoneOptionalPlaceholder")}
                 value={contactPhone}
                 onChange={(e) => setContactPhone(e.target.value)}
                 className={`${inputClass} w-full ${dialPrefix ? "pl-16" : ""}`}
@@ -202,7 +204,7 @@ export function PartnerFormDialog({
             <input
               name="description"
               type="text"
-              placeholder="Description (optional)"
+              placeholder={t("partnersDescriptionOptionalPlaceholder")}
               defaultValue={partner.description ?? undefined}
               className={`sm:col-span-2 ${inputClass}`}
             />
@@ -210,12 +212,12 @@ export function PartnerFormDialog({
         ) : (
           <>
             <div>
-              <p className="mb-3 text-xs font-medium text-muted-foreground">Institutional information</p>
+              <p className="mb-3 text-xs font-medium text-muted-foreground">{t("partnersInstitutionalInfoLabel")}</p>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <input name="name" type="text" placeholder="Name" required className={inputClass} />
+                <input name="name" type="text" placeholder={t("partnersNameOnlyPlaceholder")} required className={inputClass} />
                 <select name="type" required defaultValue="" className={inputClass}>
                   <option value="" disabled>
-                    Sector
+                    {t("partnersSectorSelectPlaceholder")}
                   </option>
                   {PARTNER_TYPES.map((type) => (
                     <option key={type.value} value={type.value}>
@@ -225,7 +227,7 @@ export function PartnerFormDialog({
                 </select>
                 <select name="plan" required defaultValue="" className={inputClass}>
                   <option value="" disabled>
-                    Plan
+                    {t("partnersPlanWord")}
                   </option>
                   {PARTNER_PLANS.map((plan) => (
                     <option key={plan.value} value={plan.value}>
@@ -237,7 +239,7 @@ export function PartnerFormDialog({
                 <input
                   name="description"
                   type="text"
-                  placeholder="Description"
+                  placeholder={t("partnersDescriptionPlaceholder")}
                   required
                   className={inputClass}
                 />
@@ -245,11 +247,11 @@ export function PartnerFormDialog({
             </div>
 
             <div className="border-t border-border pt-4">
-              <p className="mb-3 text-xs font-medium text-muted-foreground">Primary contact person</p>
+              <p className="mb-3 text-xs font-medium text-muted-foreground">{t("partnersPrimaryContactLabel")}</p>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <input name="adminFirstName" type="text" placeholder="First name" required className={inputClass} />
-                <input name="adminLastName" type="text" placeholder="Last name" required className={inputClass} />
-                <input name="adminEmail" type="email" placeholder="Email" required className={inputClass} />
+                <input name="adminFirstName" type="text" placeholder={t("firstNamePlaceholder")} required className={inputClass} />
+                <input name="adminLastName" type="text" placeholder={t("lastNamePlaceholder")} required className={inputClass} />
+                <input name="adminEmail" type="email" placeholder={t("partnersAdminEmailPlaceholder")} required className={inputClass} />
                 <div className="flex flex-col gap-1">
                   <div className="relative">
                     {dialPrefix ? (
@@ -269,7 +271,7 @@ export function PartnerFormDialog({
                   </div>
                   {dialPrefix ? (
                     <p className="text-xs text-muted-foreground">
-                      Indicatif {dialPrefix} appliqué depuis le pays de l&apos;organisation.
+                      {t("partnersDialPrefixNoteBefore")} {dialPrefix} {t("partnersDialPrefixNoteAfter")}
                     </p>
                   ) : null}
                 </div>
@@ -281,20 +283,20 @@ export function PartnerFormDialog({
                   className={inputClass}
                 >
                   <option value="" disabled>
-                    Role
+                    {t("partnersRoleSelectPlaceholder")}
                   </option>
                   {roles.map((role) => (
                     <option key={role.id} value={role.name}>
                       {role.displayName}
                     </option>
                   ))}
-                  <option value="other">Other (specify)</option>
+                  <option value="other">{t("partnersRoleOtherOption")}</option>
                 </select>
                 {adminRole === "other" ? (
                   <input
                     name="adminRoleOther"
                     type="text"
-                    placeholder="Specify role"
+                    placeholder={t("partnersRoleOtherPlaceholder")}
                     required
                     className={inputClass}
                   />
@@ -310,11 +312,11 @@ export function PartnerFormDialog({
             onClick={onClose}
             className="rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
           >
-            Cancel
+            {t("cancel")}
           </button>
           <SubmitButton
-            label={isEditMode ? "Save changes" : "Create partner & send invitation"}
-            pendingLabel={isEditMode ? "Saving…" : "Creating partner…"}
+            label={isEditMode ? t("saveChangesButton") : t("partnersCreateAndInviteButton")}
+            pendingLabel={isEditMode ? t("savingEllipsis") : t("partnersCreatingEllipsis")}
           />
         </div>
       </form>

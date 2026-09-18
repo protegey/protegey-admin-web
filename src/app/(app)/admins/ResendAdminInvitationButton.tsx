@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useLang } from "@/lib/i18n/LangProvider";
 import { resendAdminInvitationAction } from "./actions";
 
 export function ResendAdminInvitationButton({ invitationId }: { invitationId: string }) {
+  const { t } = useLang();
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [result, setResult] = useState<{ error?: string; success?: boolean } | null>(null);
@@ -25,10 +27,10 @@ export function ResendAdminInvitationButton({ invitationId }: { invitationId: st
         onClick={handleClick}
         className="rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-60"
       >
-        {pending ? "Sending…" : "Resend"}
+        {pending ? t("sendingEllipsis") : t("resendButton")}
       </button>
       {result?.error ? <p className="text-xs text-destructive">{result.error}</p> : null}
-      {result?.success ? <p className="text-xs text-primary">Sent.</p> : null}
+      {result?.success ? <p className="text-xs text-primary">{t("sentMessage")}</p> : null}
     </div>
   );
 }

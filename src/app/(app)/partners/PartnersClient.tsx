@@ -6,6 +6,8 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Plus, Pencil, Search, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import { PartnerFormDialog, type EditablePartner } from "./PartnerFormDialog";
 import type { AssignableRole } from "./actions";
+import { useLang } from "@/lib/i18n/LangProvider";
+import type { StringKey } from "@/lib/i18n/strings";
 
 interface Partner {
   id: string;
@@ -29,15 +31,22 @@ const STATUS_STYLES: Record<string, string> = {
   rejected: "bg-destructive/10 text-destructive",
 };
 
-const STATUS_OPTIONS = [
-  { value: "all", label: "All statuses" },
-  { value: "pending_verification", label: "Pending verification" },
-  { value: "pending", label: "Pending" },
-  { value: "active", label: "Active" },
-  { value: "suspended", label: "Suspended" },
-  { value: "inactive", label: "Inactive" },
-  { value: "rejected", label: "Rejected" },
-];
+const STATUS_LABEL_KEYS: Record<string, StringKey> = {
+  pending_verification: "partnersStatusPendingVerification",
+  pending: "partnersStatusPending",
+  active: "partnersStatusActive",
+  suspended: "partnersStatusSuspended",
+  inactive: "partnersStatusInactive",
+  rejected: "partnersStatusRejected",
+};
+
+const TYPE_LABEL_KEYS: Record<string, StringKey> = {
+  fintech: "partnerTypeFintech",
+  bank: "partnerTypeBank",
+  telco: "partnerTypeTelco",
+  regulator: "partnerTypeRegulator",
+  other: "partnerTypeOther",
+};
 
 function formatLabel(value: string): string {
   return value
@@ -51,8 +60,8 @@ export function PartnersClient({
   page,
   totalPages,
   total,
-  heading = "Partners",
-  description = "Institutions onboarded onto Protegey — fintechs, banks, telcos and regulators.",
+  heading,
+  description,
   illustration,
   initialStatus = "all",
   roles,
@@ -61,12 +70,30 @@ export function PartnersClient({
   page: number;
   totalPages: number;
   total: number;
-  heading?: string;
-  description?: string;
+  heading: string;
+  description: string;
   illustration?: React.ReactNode;
   initialStatus?: string;
   roles: AssignableRole[];
 }) {
+  const { t } = useLang();
+  const statusLabel = (status: string) => {
+    const key = STATUS_LABEL_KEYS[status];
+    return key ? t(key) : formatLabel(status);
+  };
+  const typeLabel = (type: string) => {
+    const key = TYPE_LABEL_KEYS[type];
+    return key ? t(key) : formatLabel(type);
+  };
+  const STATUS_OPTIONS = [
+    { value: "all", label: t("partnersStatusAll") },
+    { value: "pending_verification", label: t("partnersStatusPendingVerification") },
+    { value: "pending", label: t("partnersStatusPending") },
+    { value: "active", label: t("partnersStatusActive") },
+    { value: "suspended", label: t("partnersStatusSuspended") },
+    { value: "inactive", label: t("partnersStatusInactive") },
+    { value: "rejected", label: t("partnersStatusRejected") },
+  ];
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -149,7 +176,7 @@ export function PartnersClient({
           className="flex shrink-0 items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
         >
           <Plus className="size-4" />
-          Add partner
+          {t("partnersAddButton")}
         </button>
       </div>
 
@@ -161,7 +188,7 @@ export function PartnersClient({
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Search by name, email, phone or country…"
+              placeholder={t("partnersSearchPlaceholder")}
               className="w-full rounded-md border border-border bg-background py-2 pl-8 pr-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
@@ -169,11 +196,11 @@ export function PartnersClient({
             type="submit"
             className="rounded-md border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
           >
-            Search
+            {t("searchLabel")}
           </button>
         </form>
         <label className="flex items-center gap-2 text-sm text-muted-foreground">
-          Status
+          {t("partnersStatusLabel")}
           <select
             value={statusFilter}
             onChange={(e) => handleStatusChange(e.target.value)}
@@ -193,20 +220,20 @@ export function PartnersClient({
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60">
             <div className="flex items-center gap-2">
               <div className="size-5 animate-spin rounded-full border-2 border-muted border-t-primary" />
-              <span className="text-sm text-muted-foreground">Chargement...</span>
+              <span className="text-sm text-muted-foreground">{t("partnersLoadingLabel")}</span>
             </div>
           </div>
         )}
         <table className="w-full text-left text-sm">
           <thead className="bg-muted text-muted-foreground">
             <tr>
-              <th className="px-4 py-2.5 font-medium">Name</th>
-              <th className="px-4 py-2.5 font-medium">Type</th>
-              <th className="px-4 py-2.5 font-medium">Plan</th>
-              <th className="px-4 py-2.5 font-medium">Contact</th>
-              <th className="px-4 py-2.5 font-medium">Country</th>
-              <th className="px-4 py-2.5 font-medium">Status</th>
-              <th className="px-4 py-2.5 font-medium text-right">Actions</th>
+              <th className="px-4 py-2.5 font-medium">{t("partnersNameColumn")}</th>
+              <th className="px-4 py-2.5 font-medium">{t("partnersTypeColumn")}</th>
+              <th className="px-4 py-2.5 font-medium">{t("partnersPlanWord")}</th>
+              <th className="px-4 py-2.5 font-medium">{t("partnersContactColumn")}</th>
+              <th className="px-4 py-2.5 font-medium">{t("partnersCountryColumn")}</th>
+              <th className="px-4 py-2.5 font-medium">{t("partnersStatusLabel")}</th>
+              <th className="px-4 py-2.5 font-medium text-right">{t("partnersActionsColumn")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -217,7 +244,7 @@ export function PartnersClient({
                     {partner.name}
                   </Link>
                 </td>
-                <td className="px-4 py-2.5 text-muted-foreground">{formatLabel(partner.type)}</td>
+                <td className="px-4 py-2.5 text-muted-foreground">{typeLabel(partner.type)}</td>
                 <td className="px-4 py-2.5 text-muted-foreground">{formatLabel(partner.plan)}</td>
                 <td className="px-4 py-2.5 text-muted-foreground">{partner.contactEmail ?? "—"}</td>
                 <td className="px-4 py-2.5 text-muted-foreground">{partner.country ?? "—"}</td>
@@ -227,7 +254,7 @@ export function PartnersClient({
                       STATUS_STYLES[partner.status] ?? "bg-muted text-muted-foreground"
                     }`}
                   >
-                    {formatLabel(partner.status)}
+                    {statusLabel(partner.status)}
                   </span>
                 </td>
                 <td className="px-4 py-2.5">
@@ -237,7 +264,7 @@ export function PartnersClient({
                       className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted"
                     >
                       <Eye className="size-3.5" />
-                      View
+                      {t("partnersViewButton")}
                     </Link>
                     <button
                       type="button"
@@ -245,7 +272,7 @@ export function PartnersClient({
                       className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted"
                     >
                       <Pencil className="size-3.5" />
-                      Edit
+                      {t("editButton")}
                     </button>
                   </div>
                 </td>
@@ -254,7 +281,7 @@ export function PartnersClient({
             {partners.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-4 py-6 text-center text-muted-foreground">
-                  No partners found.
+                  {t("partnersEmptyMessage")}
                 </td>
               </tr>
             ) : null}
@@ -265,7 +292,8 @@ export function PartnersClient({
       {totalPages > 1 ? (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <p>
-            Page {page} of {totalPages} — {total} partner{total === 1 ? "" : "s"} total
+            {t("pageWord")} {page} {t("ofWord")} {totalPages} — {total} {t("partnersPartnerWord")}
+            {total === 1 ? "" : "s"} {t("partnersTotalWord")}
           </p>
           <div className="flex gap-2">
             <button
@@ -275,7 +303,7 @@ export function PartnersClient({
               className="flex cursor-pointer items-center gap-1 rounded-md border border-border px-3 py-1.5 text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
             >
               <ChevronLeft className="size-4" />
-              Previous
+              {t("previousPageButton")}
             </button>
             <button
               type="button"
@@ -283,7 +311,7 @@ export function PartnersClient({
               onClick={() => goToPage(page + 1)}
               className="flex cursor-pointer items-center gap-1 rounded-md border border-border px-3 py-1.5 text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
             >
-              Next
+              {t("nextPageButton")}
               <ChevronRight className="size-4" />
             </button>
           </div>

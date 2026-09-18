@@ -1,3 +1,7 @@
+"use client";
+
+import { useLang } from "@/lib/i18n/LangProvider";
+
 interface Props {
   stats: {
     total: number;
@@ -9,15 +13,16 @@ interface Props {
 }
 
 export function StatsCards({ stats }: Props) {
-  const byTypePerson = stats.byType.find((t) => t.type === "person")?.count ?? 0;
-  const byTypeBusiness = stats.byType.find((t) => t.type === "business")?.count ?? 0;
+  const { t } = useLang();
+  const byTypePerson = stats.byType.find((entry) => entry.type === "person")?.count ?? 0;
+  const byTypeBusiness = stats.byType.find((entry) => entry.type === "business")?.count ?? 0;
 
   return (
     <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-      <Card label="Active" value={stats.active} />
-      <Card label="Delisted" value={stats.delisted} />
-      <Card label="Persons" value={byTypePerson} />
-      <Card label="Businesses" value={byTypeBusiness} />
+      <Card label={t("sanctionsStatActive")} value={stats.active} />
+      <Card label={t("sanctionsStatDelisted")} value={stats.delisted} />
+      <Card label={t("sanctionsStatPersons")} value={byTypePerson} />
+      <Card label={t("sanctionsStatBusinesses")} value={byTypeBusiness} />
     </div>
   );
 }

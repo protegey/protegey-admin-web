@@ -3,6 +3,8 @@
 import { redirect } from "next/navigation";
 import { apiFetch, ApiError } from "@/lib/api";
 import { setSessionCookies, type SessionUser } from "@/lib/session";
+import { getLang } from "@/lib/i18n/lang";
+import { t } from "@/lib/i18n/strings";
 
 export interface LoginState {
   error?: string;
@@ -15,11 +17,12 @@ interface LoginResponse {
 }
 
 export async function loginAction(_prevState: LoginState, formData: FormData): Promise<LoginState> {
+  const lang = await getLang();
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
 
   if (!email || !password) {
-    return { error: "Please enter your email and password." };
+    return { error: t(lang, "loginMissingCredentialsError") };
   }
 
   let response: LoginResponse;
@@ -31,9 +34,9 @@ export async function loginAction(_prevState: LoginState, formData: FormData): P
     });
   } catch (error) {
     if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
-      return { error: "Incorrect email or password." };
+      return { error: t(lang, "loginIncorrectCredentialsError") };
     }
-    return { error: "Something went wrong. Please try again." };
+    return { error: t(lang, "somethingWentWrongRetryMessage") };
   }
 
   await setSessionCookies(response.accessToken, response.refreshToken, response.user);
