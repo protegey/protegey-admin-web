@@ -29,6 +29,8 @@ const STRINGS = {
   navPartnerVerification: { en: "Partner Verification", fr: "Vérification des partenaires" },
   navSanctions: { en: "Sanctions", fr: "Sanctions" },
   navSanctionsList: { en: "Sanctions List", fr: "Liste des sanctions" },
+  navAml: { en: "AML", fr: "LBC" },
+  navAmlConsole: { en: "AML Console", fr: "Console LBC" },
   navAdministrators: { en: "Administrators", fr: "Administrateurs" },
 
   // ---- Shared atoms (reused across pages/dialogs) ----
@@ -330,6 +332,25 @@ const STRINGS = {
   },
 
   // ---- Sanctions ----
+  amlTitle: { en: "AML Console", fr: "Console LBC" },
+  amlSubtitle: { en: "Monitor alerts, PEP reviews, EDD work, and SAR activity across partners.", fr: "Surveillez les alertes, les revues PEP, les contrôles EDD et les déclarations SAR des partenaires." },
+  amlPartnerFilter: { en: "Partner", fr: "Partenaire" },
+  amlAllPartners: { en: "All partners", fr: "Tous les partenaires" },
+  amlApplyFilter: { en: "Apply", fr: "Appliquer" },
+  amlPartnerBreakdown: { en: "Partner breakdown", fr: "Répartition par partenaire" },
+  amlPartner: { en: "Partner", fr: "Partenaire" },
+  amlOpenAlerts: { en: "Open alerts", fr: "Alertes ouvertes" },
+  amlConfirmedAlerts: { en: "Confirmed alerts", fr: "Alertes confirmées" },
+  amlOverdueAlerts: { en: "Overdue alerts", fr: "Alertes en retard" },
+  amlEscalatedAlerts: { en: "Escalated alerts", fr: "Alertes escaladées" },
+  amlConfirmedPep: { en: "Confirmed PEP", fr: "PEP confirmées" },
+  amlPepReviews: { en: "PEP reviews", fr: "Revues PEP" },
+  amlEddOpen: { en: "Open EDD", fr: "EDD ouvertes" },
+  amlOpenEdd: { en: "Open EDD", fr: "EDD ouvertes" },
+  amlSarDrafts: { en: "SAR drafts", fr: "Brouillons SAR" },
+  amlSarSubmitted: { en: "SAR submitted", fr: "SAR soumises" },
+  amlNoPartners: { en: "No partner data found.", fr: "Aucune donnée partenaire trouvée." },
+
   sanctionsRefreshButton: { en: "Refresh", fr: "Actualiser" },
   sanctionsCloseUploadButton: { en: "Close Upload", fr: "Fermer l'import" },
   sanctionsImportCsvButton: { en: "Import CSV", fr: "Importer un CSV" },

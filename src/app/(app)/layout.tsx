@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Handshake, ShieldCheck, Users } from "lucide-react";
+import { Handshake, ShieldAlert, ShieldCheck, Users } from "lucide-react";
 import { Sidebar, type NavItem } from "@/components/Sidebar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LangToggle } from "@/components/LangToggle";
@@ -25,6 +25,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       label: t(lang, "navSanctions"),
       icon: <ShieldCheck className="size-4" />,
       children: [{ href: "/sanctions", label: t(lang, "navSanctionsList") }],
+    },
+    {
+      label: t(lang, "navAml"),
+      icon: <ShieldAlert className="size-4" />,
+      children: [{ href: "/aml", label: t(lang, "navAmlConsole") }],
     },
   ];
 
