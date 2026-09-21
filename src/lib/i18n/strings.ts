@@ -2,6 +2,7 @@ export type Lang = "en" | "fr";
 
 /** One flat dictionary for the whole admin app — same convention as protegey-partner-web's `src/lib/i18n/strings.ts`. */
 const STRINGS = {
+  refreshButton: { en: "Refresh", fr: "Actualiser" },
   languageToggleAria: { en: "Switch language", fr: "Changer de langue" },
   soonBadge: { en: "Soon", fr: "Bientôt" },
   signOut: { en: "Sign out", fr: "Se déconnecter" },

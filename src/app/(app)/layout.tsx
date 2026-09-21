@@ -7,6 +7,7 @@ import { SignOutButton } from "@/components/SignOutButton";
 import { getSessionUser } from "@/lib/session";
 import { getLang } from "@/lib/i18n/lang";
 import { t } from "@/lib/i18n/strings";
+import { RefreshButton } from "@/components/RefreshButton";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const [user, lang] = await Promise.all([getSessionUser(), getLang()]);
@@ -43,8 +44,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         }
       />
       <main className="flex flex-1 flex-col overflow-y-auto">
-        <div className="flex justify-end border-b border-border px-8 py-3">
-          <Link
+          <div className="flex justify-end gap-2 border-b border-border px-8 py-3">
+            <RefreshButton />
+            <Link
             href="/admins"
             className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
           >

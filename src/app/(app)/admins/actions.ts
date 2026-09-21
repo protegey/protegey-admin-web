@@ -24,8 +24,16 @@ export interface PendingAdminInvitation {
   roles: { name: string; displayName: string }[];
 }
 
-export async function getPendingAdminInvitations(): Promise<PendingAdminInvitation[]> {
-  return apiFetch<PendingAdminInvitation[]>("/admins/invitations");
+export interface PaginatedResult<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export async function getPendingAdminInvitations(page = 1): Promise<PaginatedResult<PendingAdminInvitation>> {
+  return apiFetch<PaginatedResult<PendingAdminInvitation>>(`/admins/invitations?page=${page}&limit=20`);
 }
 
 export async function resendAdminInvitationAction(invitationId: string): Promise<ActionResult> {

@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { CreateAdminDialogButton } from "./CreateAdminDialogButton";
 import { ResendAdminInvitationButton } from "./ResendAdminInvitationButton";
@@ -23,17 +25,32 @@ interface Admin {
   roles: { name: string; displayName: string }[];
 }
 
+interface PaginatedAdmins {
+  data: Admin[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export interface AssignableRole {
   id: string;
   name: string;
   displayName: string;
 }
 
-export default async function AdminsPage() {
+export default async function AdminsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string; invitationPage?: string }>;
+}) {
+  const params = await searchParams;
+  const page = Math.max(1, Number(params.page) || 1);
+  const invitationPage = Math.max(1, Number(params.invitationPage) || 1);
   const [admins, roles, invitations, lang] = await Promise.all([
-    apiFetch<Admin[]>("/admins"),
+    apiFetch<PaginatedAdmins>(`/admins?page=${page}&limit=20`),
     apiFetch<AssignableRole[]>("/roles?scope=core"),
-    getPendingAdminInvitations(),
+    getPendingAdminInvitations(invitationPage),
     getLang(),
   ]);
 
@@ -47,7 +64,7 @@ export default async function AdminsPage() {
         <CreateAdminDialogButton roles={roles} />
       </div>
 
-      {invitations.length > 0 ? (
+      {invitations.data.length > 0 ? (
         <div className="overflow-hidden rounded-md border border-border">
           <table className="w-full text-left text-sm">
             <thead className="bg-muted text-muted-foreground">
@@ -59,7 +76,7 @@ export default async function AdminsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {invitations.map((invitation) => (
+              {invitations.data.map((invitation) => (
                 <tr key={invitation.id}>
                   <td className="px-4 py-2.5">
                     <p className="text-foreground">
@@ -85,6 +102,9 @@ export default async function AdminsPage() {
           </table>
         </div>
       ) : null}
+      {invitations.totalPages > 1 ? (
+        <Pagination page={invitations.page} totalPages={invitations.totalPages} total={invitations.total} param="invitationPage" otherParam="page" otherPage={page} lang={lang} />
+      ) : null}
 
       <div className="overflow-hidden rounded-md border border-border">
         <table className="w-full text-left text-sm">
@@ -100,7 +120,7 @@ export default async function AdminsPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {admins.map((admin) => (
+            {admins.data.map((admin) => (
               <tr key={admin.id}>
                 <td className="px-4 py-2.5 text-foreground">
                   {admin.firstName} {admin.lastName}
@@ -135,6 +155,42 @@ export default async function AdminsPage() {
             ))}
           </tbody>
         </table>
+      </div>
+      {admins.totalPages > 1 ? (
+        <Pagination page={admins.page} totalPages={admins.totalPages} total={admins.total} param="page" otherParam="invitationPage" otherPage={invitationPage} lang={lang} />
+      ) : null}
+    </div>
+  );
+}
+
+function Pagination({
+  page,
+  totalPages,
+  total,
+  param,
+  otherParam,
+  otherPage,
+  lang,
+}: {
+  page: number;
+  totalPages: number;
+  total: number;
+  param: string;
+  otherParam: string;
+  otherPage: number;
+  lang: "en" | "fr";
+}) {
+  const href = (nextPage: number) => `?${param}=${nextPage}&${otherParam}=${otherPage}`;
+  return (
+    <div className="flex items-center justify-between text-sm text-muted-foreground">
+      <p>{t(lang, "pageWord")} {page} {t(lang, "ofWord")} {totalPages} — {total}</p>
+      <div className="flex gap-2">
+        <Link aria-disabled={page <= 1} href={href(Math.max(1, page - 1))} className={`flex items-center gap-1 rounded-md border border-border px-3 py-1.5 text-foreground transition-colors hover:bg-muted ${page <= 1 ? "pointer-events-none opacity-40" : ""}`}>
+          <ChevronLeft className="size-4" /> {t(lang, "previousPageButton")}
+        </Link>
+        <Link aria-disabled={page >= totalPages} href={href(Math.min(totalPages, page + 1))} className={`flex items-center gap-1 rounded-md border border-border px-3 py-1.5 text-foreground transition-colors hover:bg-muted ${page >= totalPages ? "pointer-events-none opacity-40" : ""}`}>
+          {t(lang, "nextPageButton")} <ChevronRight className="size-4" />
+        </Link>
       </div>
     </div>
   );
