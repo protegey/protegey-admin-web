@@ -232,6 +232,7 @@ export function PartnersClient({
               <th className="px-4 py-2.5 font-medium">{t("partnersPlanWord")}</th>
               <th className="px-4 py-2.5 font-medium">{t("partnersContactColumn")}</th>
               <th className="px-4 py-2.5 font-medium">{t("partnersCountryColumn")}</th>
+              <th className="px-4 py-2.5 font-medium">{t("partnersCreatedColumn")}</th>
               <th className="px-4 py-2.5 font-medium">{t("partnersStatusLabel")}</th>
               <th className="px-4 py-2.5 font-medium text-right">{t("partnersActionsColumn")}</th>
             </tr>
@@ -246,8 +247,14 @@ export function PartnersClient({
                 </td>
                 <td className="px-4 py-2.5 text-muted-foreground">{typeLabel(partner.type)}</td>
                 <td className="px-4 py-2.5 text-muted-foreground">{formatLabel(partner.plan)}</td>
-                <td className="px-4 py-2.5 text-muted-foreground">{partner.contactEmail ?? "—"}</td>
+                <td className="px-4 py-2.5 text-muted-foreground">
+                  <div>{partner.contactEmail ?? "—"}</div>
+                  {partner.contactPhone ? <div className="text-xs">{partner.contactPhone}</div> : null}
+                </td>
                 <td className="px-4 py-2.5 text-muted-foreground">{partner.country ?? "—"}</td>
+                <td className="px-4 py-2.5 text-muted-foreground">
+                  {new Date(partner.createdAt).toLocaleDateString()}
+                </td>
                 <td className="px-4 py-2.5">
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs font-medium ${
@@ -280,7 +287,7 @@ export function PartnersClient({
             ))}
             {partners.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-muted-foreground">
+                <td colSpan={8} className="px-4 py-6 text-center text-muted-foreground">
                   {t("partnersEmptyMessage")}
                 </td>
               </tr>

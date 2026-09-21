@@ -84,6 +84,9 @@ export function PartnerTeamSection({
                 <p className="truncate text-xs text-muted-foreground">
                   {invitation.email} · {invitation.roles.map((role) => role.displayName).join(", ") || "—"}
                 </p>
+                <p className="text-xs text-muted-foreground">
+                  {t("partnersTeamInvitationExpiresLabel")} {new Date(invitation.expiresAt).toLocaleDateString()}
+                </p>
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 <EditPartnerInvitationDialogButton partnerId={partnerId} invitation={invitation} roles={roles} />

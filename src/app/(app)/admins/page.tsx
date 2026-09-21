@@ -54,6 +54,7 @@ export default async function AdminsPage() {
               <tr>
                 <th className="px-4 py-2.5 font-medium">{t(lang, "adminsPendingInvitationColumn")}</th>
                 <th className="px-4 py-2.5 font-medium">{t(lang, "adminsRoleColumn")}</th>
+                <th className="px-4 py-2.5 font-medium">{t(lang, "adminsInvitationExpiresColumn")}</th>
                 <th className="px-4 py-2.5 font-medium text-right">{t(lang, "adminsActionsColumn")}</th>
               </tr>
             </thead>
@@ -68,6 +69,9 @@ export default async function AdminsPage() {
                   </td>
                   <td className="px-4 py-2.5 text-muted-foreground">
                     {invitation.roles.map((role) => role.displayName).join(", ") || "—"}
+                  </td>
+                  <td className="px-4 py-2.5 text-muted-foreground">
+                    {new Date(invitation.expiresAt).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-2.5">
                     <div className="flex justify-end gap-2">
@@ -91,6 +95,7 @@ export default async function AdminsPage() {
               <th className="px-4 py-2.5 font-medium">{t(lang, "adminsRoleColumn")}</th>
               <th className="px-4 py-2.5 font-medium">{t(lang, "adminsStatusColumn")}</th>
               <th className="px-4 py-2.5 font-medium">{t(lang, "adminsLastLoginColumn")}</th>
+              <th className="px-4 py-2.5 font-medium">{t(lang, "adminsCreatedColumn")}</th>
               <th className="px-4 py-2.5 font-medium text-right">{t(lang, "adminsActionsColumn")}</th>
             </tr>
           </thead>
@@ -117,6 +122,9 @@ export default async function AdminsPage() {
                 </td>
                 <td className="px-4 py-2.5 text-muted-foreground">
                   {admin.lastLoginAt ? new Date(admin.lastLoginAt).toLocaleString() : t(lang, "neverLabel")}
+                </td>
+                <td className="px-4 py-2.5 text-muted-foreground">
+                  {new Date(admin.createdAt).toLocaleDateString()}
                 </td>
                 <td className="px-4 py-2.5">
                   <div className="flex justify-end">

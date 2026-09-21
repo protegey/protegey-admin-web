@@ -37,6 +37,13 @@ function formatLabel(value: string): string {
     .join(" ");
 }
 
+function formatFileSize(bytes: number | null): string | null {
+  if (bytes === null) return null;
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 export function DocumentReviewRow({
   partnerId,
   document,
@@ -110,6 +117,25 @@ export function DocumentReviewRow({
         <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[document.status]}`}>
           {STATUS_LABEL_KEYS[document.status] ? t(STATUS_LABEL_KEYS[document.status]) : formatLabel(document.status)}
         </span>
+      </div>
+
+      <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground sm:grid-cols-4">
+        <p>
+          <span className="font-medium">{t("partnersDocSubmittedLabel")}:</span>{" "}
+          {document.submittedAt ? new Date(document.submittedAt).toLocaleDateString() : "—"}
+        </p>
+        <p>
+          <span className="font-medium">{t("partnersDocFileSizeLabel")}:</span>{" "}
+          {formatFileSize(document.fileSizeBytes) ?? "—"}
+        </p>
+        <p>
+          <span className="font-medium">{t("partnersDocReviewedLabel")}:</span>{" "}
+          {document.reviewedAt ? new Date(document.reviewedAt).toLocaleDateString() : "—"}
+        </p>
+        <p>
+          <span className="font-medium">{t("partnersDocReviewedByLabel")}:</span>{" "}
+          {document.reviewedBy ? `${document.reviewedBy.firstName} ${document.reviewedBy.lastName}` : "—"}
+        </p>
       </div>
 
       {document.status === "rejected" && document.rejectionReason ? (
