@@ -29,7 +29,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     {
       label: t(lang, "navAml"),
       icon: <ShieldAlert className="size-4" />,
-      children: [{ href: "/aml", label: t(lang, "navAmlConsole") }],
+      children: [
+        { href: "/aml", label: t(lang, "navAmlConsole") },
+        { href: "/aml/reviews", label: t(lang, "navAmlReviews") },
+      ],
     },
   ];
 
