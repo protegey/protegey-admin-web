@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { toast } from "sonner";
-import { Pencil } from "lucide-react";
+import { Gauge, ListChecks, Pencil } from "lucide-react";
 import { ConfirmActionDialog } from "@/components/ConfirmActionDialog";
 import { PartnerDetailIllustration } from "@/components/PartnerDetailIllustration";
 import { useLang } from "@/lib/i18n/LangProvider";
@@ -195,6 +196,20 @@ export function PartnerDetailClient({
           </div>
         </div>
         <div className="flex shrink-0 gap-2">
+          <Link
+            href={`/risk-profile?partnerId=${encodeURIComponent(partner.id)}`}
+            className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+          >
+            <Gauge className="size-3.5" />
+            {t("navRiskProfiles")}
+          </Link>
+          <Link
+            href={`/screening/matches?partnerId=${encodeURIComponent(partner.id)}`}
+            className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+          >
+            <ListChecks className="size-3.5" />
+            {t("navScreeningMatches")}
+          </Link>
           <button
             type="button"
             onClick={() => setEditOpen(true)}

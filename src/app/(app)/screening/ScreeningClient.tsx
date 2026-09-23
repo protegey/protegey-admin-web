@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Search, ShieldAlert, ShieldCheck, ShieldQuestion } from "lucide-react";
+import Link from "next/link";
+import { ListChecks, Search, ShieldAlert, ShieldCheck, ShieldQuestion } from "lucide-react";
 import { useLang } from "@/lib/i18n/LangProvider";
 import { screenName } from "./actions";
 import { ApiError } from "./errors";
 import type { ScreeningResult } from "./types";
+import type { PartnerOption } from "@/lib/partner-options";
 
 const DECISION_STYLES: Record<string, string> = {
   blocked: "bg-destructive/10 text-destructive border-destructive/30",
@@ -25,10 +27,12 @@ function formatDate(d: string | null): string {
   return Number.isNaN(date.getTime()) ? d : date.toLocaleDateString();
 }
 
-export function ScreeningClient() {
+export function ScreeningClient({ partners }: { partners: PartnerOption[] }) {
   const { t } = useLang();
   const [name, setName] = useState("");
   const [type, setType] = useState("all");
+  const [customerId, setCustomerId] = useState("");
+  const [partnerId, setPartnerId] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ScreeningResult | null>(null);
@@ -43,7 +47,7 @@ export function ScreeningClient() {
     setLoading(true);
     setError(null);
     try {
-      const res = await screenName(name.trim(), type);
+      const res = await screenName(name.trim(), type, customerId.trim() || undefined, partnerId || undefined);
       setResult(res);
       setSearchedName(name.trim());
     } catch (err) {
@@ -64,9 +68,18 @@ export function ScreeningClient() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="text-2xl font-bold">{t("screeningTitle")}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{t("screeningSubtitle")}</p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">{t("screeningTitle")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t("screeningSubtitle")}</p>
+        </div>
+        <Link
+          href="/screening/matches"
+          className="flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+        >
+          <ListChecks className="size-4" />
+          {t("screeningViewMatchesLink")}
+        </Link>
       </div>
 
       <form onSubmit={handleSearch} className="flex flex-wrap items-end gap-4 rounded-lg border border-border bg-card p-5">
@@ -96,6 +109,33 @@ export function ScreeningClient() {
             <option value="business">{t("sanctionsTypeBusiness")}</option>
           </select>
         </div>
+        <div className="flex min-w-48 flex-col gap-1">
+          <label className="text-xs font-medium text-muted-foreground">{t("screeningCustomerIdLabel")}</label>
+          <input
+            type="text"
+            value={customerId}
+            onChange={(e) => setCustomerId(e.target.value)}
+            placeholder={t("screeningCustomerIdPlaceholder")}
+            className="rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+          />
+        </div>
+        {customerId.trim() ? (
+          <div className="flex min-w-48 flex-col gap-1">
+            <label className="text-xs font-medium text-muted-foreground">{t("screeningPartnerLabel")}</label>
+            <select
+              value={partnerId}
+              onChange={(e) => setPartnerId(e.target.value)}
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm"
+            >
+              <option value="">{t("screeningSelectPartnerOption")}</option>
+              {partners.map((partner) => (
+                <option key={partner.id} value={partner.id}>
+                  {partner.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : null}
         <button
           type="submit"
           disabled={loading}
@@ -103,6 +143,11 @@ export function ScreeningClient() {
         >
           {loading ? t("screeningSearchingEllipsis") : t("screeningSearchButton")}
         </button>
+        {customerId.trim() ? (
+          <p className={`w-full text-xs ${partnerId ? "text-muted-foreground" : "text-amber-600 dark:text-amber-400"}`}>
+            {partnerId ? t("screeningCustomerIdHint") : t("screeningPartnerRequiredError")}
+          </p>
+        ) : null}
       </form>
 
       {error && (
