@@ -7,6 +7,7 @@ interface Props {
     total: number;
     active: number;
     delisted: number;
+    pepCount: number;
     byType: { type: string; count: number }[];
     bySource: { source: string; count: number }[];
   };
@@ -18,11 +19,12 @@ export function StatsCards({ stats }: Props) {
   const byTypeBusiness = stats.byType.find((entry) => entry.type === "business")?.count ?? 0;
 
   return (
-    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+    <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
       <Card label={t("sanctionsStatActive")} value={stats.active} />
       <Card label={t("sanctionsStatDelisted")} value={stats.delisted} />
       <Card label={t("sanctionsStatPersons")} value={byTypePerson} />
       <Card label={t("sanctionsStatBusinesses")} value={byTypeBusiness} />
+      <Card label={t("sanctionsStatPep")} value={stats.pepCount} />
     </div>
   );
 }

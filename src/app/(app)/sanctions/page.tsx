@@ -10,14 +10,22 @@ export const metadata: Metadata = {
 export default async function SanctionsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; search?: string; type?: string; source?: string; delisted?: string }>;
+  searchParams: Promise<{
+    page?: string;
+    search?: string;
+    type?: string;
+    source?: string;
+    delisted?: string;
+    isPep?: string;
+  }>;
 }) {
-  const { page: pageParam, search, type, source, delisted } = await searchParams;
+  const { page: pageParam, search, type, source, delisted, isPep } = await searchParams;
   const page = Math.max(1, Number(pageParam) || 1);
   const includeDelisted = delisted === "true";
+  const isPepFilter = isPep === "true" ? true : isPep === "false" ? false : undefined;
 
   const [sanctions, stats] = await Promise.all([
-    getSanctions(page, 20, type, source, search, includeDelisted),
+    getSanctions(page, 20, type, source, search, includeDelisted, isPepFilter),
     getSanctionsStats(),
   ]);
 
@@ -33,6 +41,7 @@ export default async function SanctionsPage({
         initialSource={source ?? "all"}
         initialSearch={search ?? ""}
         initialIncludeDelisted={includeDelisted}
+        initialIsPep={isPep ?? "all"}
       />
     </Suspense>
   );

@@ -3,7 +3,8 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { Plus, Pencil, Search, Eye, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Pencil, Search, Eye } from "lucide-react";
+import { Pagination } from "@/components/Pagination";
 import { PartnerFormDialog, type EditablePartner } from "./PartnerFormDialog";
 import type { AssignableRole } from "./actions";
 import { useLang } from "@/lib/i18n/LangProvider";
@@ -296,34 +297,14 @@ export function PartnersClient({
         </table>
       </div>
 
-      {totalPages > 1 ? (
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <p>
-            {t("pageWord")} {page} {t("ofWord")} {totalPages} — {total} {t("partnersPartnerWord")}
-            {total === 1 ? "" : "s"} {t("partnersTotalWord")}
-          </p>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              disabled={page <= 1}
-              onClick={() => goToPage(page - 1)}
-              className="flex cursor-pointer items-center gap-1 rounded-md border border-border px-3 py-1.5 text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              <ChevronLeft className="size-4" />
-              {t("previousPageButton")}
-            </button>
-            <button
-              type="button"
-              disabled={page >= totalPages}
-              onClick={() => goToPage(page + 1)}
-              className="flex cursor-pointer items-center gap-1 rounded-md border border-border px-3 py-1.5 text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              {t("nextPageButton")}
-              <ChevronRight className="size-4" />
-            </button>
-          </div>
-        </div>
-      ) : null}
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        pageSize={20}
+        itemLabel={t("partnersWord")}
+        onPageChange={goToPage}
+      />
 
       <PartnerFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} partner={dialogPartner} roles={roles} />
     </div>

@@ -9,7 +9,7 @@ import { PartnerDetailIllustration } from "@/components/PartnerDetailIllustratio
 import { useLang } from "@/lib/i18n/LangProvider";
 import type { StringKey } from "@/lib/i18n/strings";
 import { PartnerFormDialog, type EditablePartner } from "../PartnerFormDialog";
-import { decidePartner, getPartnerDocuments, type PartnerDocument } from "../documents-actions";
+import { decidePartner, getPartnerDocuments, updatePartnerKycProvider, type PartnerDocument } from "../documents-actions";
 import type { TeamMember, PendingInvitation, AssignableRole } from "../team-actions";
 import { DocumentReviewRow } from "./DocumentReviewRow";
 import { PartnerTeamSection } from "./PartnerTeamSection";
@@ -29,6 +29,7 @@ interface Partner {
   rejectionReason: string | null;
   createdAt: string;
   activatedAt: string | null;
+  kycProvider: "didit" | "facetec";
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -94,6 +95,7 @@ export function PartnerDetailClient({
   const [decisionReason, setDecisionReason] = useState("");
   const [confirmDecision, setConfirmDecision] = useState<"approve" | "reject" | null>(null);
   const [decisionPending, setDecisionPending] = useState(false);
+  const [kycProviderPending, setKycProviderPending] = useState(false);
 
   function closeDecisionConfirm() {
     setConfirmDecision(null);
@@ -143,6 +145,19 @@ export function PartnerDetailClient({
       toast.success(t("partnersRejectedToast"));
       closeDecisionConfirm();
       router.refresh();
+    }
+  }
+
+  async function handleKycProviderChange(next: "didit" | "facetec") {
+    if (next === partner.kycProvider || kycProviderPending) return;
+    setKycProviderPending(true);
+    const result = await updatePartnerKycProvider(partner.id, next);
+    setKycProviderPending(false);
+    if (result.error) {
+      toast.error(result.error);
+    } else {
+      setPartner((prev) => ({ ...prev, kycProvider: next }));
+      toast.success(t("partnersKycProviderUpdatedToast"));
     }
   }
 
@@ -198,7 +213,7 @@ export function PartnerDetailClient({
         </div>
       ) : null}
 
-      <div className="grid grid-cols-2 gap-x-6 gap-y-4 rounded-md border border-border bg-card p-5 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-x-6 gap-y-4 rounded-md border border-border bg-card p-5 sm:grid-cols-3 lg:grid-cols-4">
         <InfoField label={t("partnersContactEmailLabel")} value={partner.contactEmail} />
         <InfoField label={t("partnersContactPhoneLabel")} value={partner.contactPhone} />
         <InfoField
@@ -209,6 +224,39 @@ export function PartnerDetailClient({
         <InfoField label={t("partnersCreatedLabel")} value={new Date(partner.createdAt).toLocaleDateString()} />
         <InfoField label={t("partnersActivatedLabel")} value={partner.activatedAt ? new Date(partner.activatedAt).toLocaleDateString() : null} />
         <InfoField label={t("partnersDescriptionLabel")} value={partner.description} />
+      </div>
+
+      <div className="flex items-center justify-between gap-4 rounded-md border border-border bg-card p-5">
+        <div>
+          <p className="text-sm font-semibold text-foreground">{t("partnersKycProviderLabel")}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{t("partnersKycProviderHint")}</p>
+        </div>
+        <div className="inline-flex shrink-0 rounded-md border border-border bg-muted p-1">
+          <button
+            type="button"
+            disabled={kycProviderPending}
+            onClick={() => handleKycProviderChange("didit")}
+            className={`rounded px-3 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+              partner.kycProvider === "didit"
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {t("partnersKycProviderDidit")}
+          </button>
+          <button
+            type="button"
+            disabled={kycProviderPending}
+            onClick={() => handleKycProviderChange("facetec")}
+            className={`rounded px-3 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+              partner.kycProvider === "facetec"
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {t("partnersKycProviderFacetec")}
+          </button>
+        </div>
       </div>
 
       <div className="rounded-md border border-border bg-card p-5">

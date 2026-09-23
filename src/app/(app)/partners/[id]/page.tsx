@@ -27,6 +27,7 @@ interface Partner {
   rejectionReason: string | null;
   createdAt: string;
   activatedAt: string | null;
+  kycProvider: "didit" | "facetec";
 }
 
 export default async function PartnerDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -41,7 +42,7 @@ export default async function PartnerDetailPage({ params }: { params: Promise<{ 
   ]);
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-4">
+    <div className="flex flex-col gap-4">
       <Link
         href="/partners"
         className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"

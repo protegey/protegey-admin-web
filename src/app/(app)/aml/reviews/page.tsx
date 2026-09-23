@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getLang } from "@/lib/i18n/lang";
 import { t } from "@/lib/i18n/strings";
 import { RefreshButton } from "@/components/RefreshButton";
+import { Pagination } from "@/components/Pagination";
 import { getAmlReviews, getAmlSummary, type AmlReviewPage } from "../actions";
 
 export const metadata: Metadata = { title: "AML Reviews — Protegey Admin" };
@@ -105,10 +106,15 @@ function ReviewTable({ page, kind, lang, partnerId, status }: { page: AmlReviewP
         {page.data.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">{t(lang, "amlReviewsEmpty")}</td></tr>}
       </tbody>
     </table>
-    <div className="flex items-center justify-between border-t border-border px-4 py-3 text-sm text-muted-foreground">
-      <span>{t(lang, "pageWord")} {page.page} {t(lang, "ofWord")} {page.totalPages} · {page.total.toLocaleString()} {t(lang, "amlReviewsRecords")}</span>
-      <div className="flex gap-2"><Link aria-disabled={page.page <= 1} className={`rounded-md border border-border px-3 py-1.5 ${page.page <= 1 ? "pointer-events-none opacity-50" : "hover:bg-muted"}`} href={reviewHref(kind, partnerId, status, page.page - 1)}>{t(lang, "previousPageButton")}</Link><Link aria-disabled={page.page >= page.totalPages} className={`rounded-md border border-border px-3 py-1.5 ${page.page >= page.totalPages ? "pointer-events-none opacity-50" : "hover:bg-muted"}`} href={reviewHref(kind, partnerId, status, page.page + 1)}>{t(lang, "nextPageButton")}</Link></div>
-    </div>
+    <Pagination
+      page={page.page}
+      totalPages={page.totalPages}
+      total={page.total}
+      pageSize={page.limit}
+      itemLabel={t(lang, "amlReviewsRecords")}
+      hrefFor={(p) => reviewHref(kind, partnerId, status, p)}
+      className="border-t border-border px-4 py-3"
+    />
   </div>;
 }
 

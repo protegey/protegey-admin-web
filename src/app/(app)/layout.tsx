@@ -24,7 +24,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     {
       label: t(lang, "navSanctions"),
       icon: <ShieldCheck className="size-4" />,
-      children: [{ href: "/sanctions", label: t(lang, "navSanctionsList") }],
+      children: [
+        { href: "/screening", label: t(lang, "navScreening") },
+        { href: "/sanctions", label: t(lang, "navSanctionsList") },
+      ],
     },
     {
       label: t(lang, "navAml"),

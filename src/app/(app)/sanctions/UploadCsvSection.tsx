@@ -15,6 +15,7 @@ export function UploadCsvSection({ onImported }: Props) {
   const [file, setFile] = useState<File | null>(null);
   const [source, setSource] = useState("custom");
   const [strategy, setStrategy] = useState("skip");
+  const [markAsPep, setMarkAsPep] = useState(false);
   const [preview, setPreview] = useState<PreviewResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [importResult, setImportResult] = useState<string | null>(null);
@@ -32,7 +33,7 @@ export function UploadCsvSection({ onImported }: Props) {
     if (!file) return;
     setLoading(true);
     try {
-      const result = await previewCsv(file, source);
+      const result = await previewCsv(file, source, markAsPep);
       setPreview(result);
     } catch (err) {
       setImportResult(`${t("sanctionsPreviewFailedPrefix")} ${(err as Error).message}`);
@@ -45,7 +46,7 @@ export function UploadCsvSection({ onImported }: Props) {
     if (!file) return;
     setLoading(true);
     try {
-      const result = await importCsv(file, strategy, source);
+      const result = await importCsv(file, strategy, source, markAsPep);
       setImportResult(
         `${t("sanctionsImportCompletePrefix")} ${result.imported} ${t("sanctionsImportCreatedWord")}, ${result.merged} ${t("sanctionsImportMergedWord")}, ${result.updated} ${t("sanctionsImportUpdatedWord")}, ${result.skipped} ${t("sanctionsImportSkippedWord")}, ${result.rejected} ${t("sanctionsImportRejectedWord")} (${t("sanctionsImportOfWord")} ${result.totalRows} ${t("sanctionsImportTotalRowsWord")})`,
       );
@@ -114,6 +115,20 @@ export function UploadCsvSection({ onImported }: Props) {
           {loading ? t("sanctionsProcessingEllipsis") : t("sanctionsImportButton")}
         </button>
       </div>
+
+      <div className="mt-3 flex items-center gap-2">
+        <input
+          type="checkbox"
+          id="markAsPep"
+          checked={markAsPep}
+          onChange={(e) => setMarkAsPep(e.target.checked)}
+          className="rounded border-border"
+        />
+        <label htmlFor="markAsPep" className="text-sm text-muted-foreground">
+          {t("sanctionsMarkImportAsPepLabel")}
+        </label>
+      </div>
+      {markAsPep && <p className="mt-1 text-xs text-muted-foreground">{t("sanctionsMarkImportAsPepHint")}</p>}
 
       {file && (
         <p className="mt-2 text-sm text-muted-foreground">

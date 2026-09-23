@@ -28,6 +28,7 @@ export async function getSanctions(
   source?: string,
   search?: string,
   includeDelisted: boolean = false,
+  isPep?: boolean,
 ): Promise<PaginatedSanctions> {
   const query = new URLSearchParams({
     page: String(page),
@@ -37,6 +38,7 @@ export async function getSanctions(
   if (source) query.set("source", source);
   if (search) query.set("search", search);
   if (includeDelisted) query.set("includeDelisted", "true");
+  if (isPep !== undefined) query.set("isPep", String(isPep));
 
   const headers = await authHeaders();
   const res = await fetch(`${BACKEND_API_URL}/admin/sanctions?${query.toString()}`, {
@@ -57,11 +59,16 @@ export async function getSanctionsStats(): Promise<SanctionsStats> {
   return res.json();
 }
 
-export async function previewCsv(file: File, source: string = "custom"): Promise<PreviewResult> {
+export async function previewCsv(
+  file: File,
+  source: string = "custom",
+  markAsPep: boolean = false,
+): Promise<PreviewResult> {
   const headers = await authHeaders();
   const form = new FormData();
   form.append("file", file);
   form.append("source", source);
+  if (markAsPep) form.append("markAsPep", "true");
 
   const res = await fetch(`${BACKEND_API_URL}/admin/sanctions/preview`, {
     method: "POST",
@@ -76,12 +83,14 @@ export async function importCsv(
   file: File,
   duplicateStrategy: string = "skip",
   source: string = "custom",
+  markAsPep: boolean = false,
 ): Promise<ImportResult> {
   const headers = await authHeaders();
   const form = new FormData();
   form.append("file", file);
   form.append("duplicateStrategy", duplicateStrategy);
   form.append("source", source);
+  if (markAsPep) form.append("markAsPep", "true");
 
   const res = await fetch(`${BACKEND_API_URL}/admin/sanctions/import`, {
     method: "POST",
@@ -116,7 +125,7 @@ export async function restoreSanction(id: string) {
 
 export async function updateSanction(
   id: string,
-  data: { name?: string; aliases?: string[]; notes?: string }
+  data: { name?: string; aliases?: string[]; notes?: string; isPep?: boolean }
 ) {
   const headers = await authHeaders();
   const res = await fetch(`${BACKEND_API_URL}/admin/sanctions/${id}`, {

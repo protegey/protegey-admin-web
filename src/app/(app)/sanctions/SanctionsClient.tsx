@@ -19,6 +19,7 @@ interface Props {
   initialSource: string;
   initialSearch: string;
   initialIncludeDelisted: boolean;
+  initialIsPep: string;
 }
 
 export function SanctionsClient({
@@ -31,6 +32,7 @@ export function SanctionsClient({
   initialSource,
   initialSearch,
   initialIncludeDelisted,
+  initialIsPep,
 }: Props) {
   const { t } = useLang();
   const router = useRouter();
@@ -39,6 +41,7 @@ export function SanctionsClient({
   const [type, setType] = useState(initialType);
   const [source, setSource] = useState(initialSource);
   const [includeDelisted, setIncludeDelisted] = useState(initialIncludeDelisted);
+  const [isPep, setIsPep] = useState(initialIsPep);
   const [showUpload, setShowUpload] = useState(false);
 
   function applyFilters(newPage: number = 1) {
@@ -48,6 +51,7 @@ export function SanctionsClient({
     if (type !== "all") params.set("type", type);
     if (source !== "all") params.set("source", source);
     if (includeDelisted) params.set("delisted", "true");
+    if (isPep !== "all") params.set("isPep", isPep);
     startTransition(() => {
       router.push(`/sanctions?${params.toString()}`);
     });
@@ -124,6 +128,18 @@ export function SanctionsClient({
             <option value="un">UN</option>
             <option value="au">AU</option>
             <option value="custom">{t("sanctionsSourceCustom")}</option>
+          </select>
+        </div>
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-medium text-muted-foreground">{t("sanctionsIsPepLabel")}</label>
+          <select
+            value={isPep}
+            onChange={(e) => setIsPep(e.target.value)}
+            className="rounded-md border border-border bg-background px-3 py-1.5 text-sm"
+          >
+            <option value="all">{t("sanctionsIsPepAll")}</option>
+            <option value="true">{t("sanctionsIsPepOnly")}</option>
+            <option value="false">{t("sanctionsIsPepExclude")}</option>
           </select>
         </div>
         <div className="flex items-center gap-2">

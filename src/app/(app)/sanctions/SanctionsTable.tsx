@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Pencil } from "lucide-react";
 import { useLang } from "@/lib/i18n/LangProvider";
+import { Pagination } from "@/components/Pagination";
 import { deleteSanction, restoreSanction, updateSanction } from "./actions";
 import type { SanctionsEntity } from "./types";
 
@@ -159,6 +160,55 @@ function NotesCell({ sanction, onSaved }: { sanction: SanctionsEntity; onSaved: 
   );
 }
 
+function PepCell({ sanction, onSaved }: { sanction: SanctionsEntity; onSaved: () => void }) {
+  const { t } = useLang();
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(sanction.isPep);
+  const [saving, setSaving] = useState(false);
+
+  function openDialog() {
+    setValue(sanction.isPep);
+    setOpen(true);
+  }
+
+  async function save() {
+    setSaving(true);
+    await updateSanction(sanction.id, { isPep: value });
+    setSaving(false);
+    setOpen(false);
+    onSaved();
+  }
+
+  return (
+    <>
+      <td className="px-4 py-3">
+        <button onClick={openDialog} className="group flex items-center gap-1.5">
+          {sanction.isPep ? (
+            <span className="inline-flex items-center rounded-full border border-purple-300 bg-purple-100 px-2 py-0.5 text-xs font-semibold text-purple-800 dark:border-purple-800 dark:bg-purple-900/40 dark:text-purple-200">
+              {t("sanctionsPepBadge")}
+            </span>
+          ) : (
+            <span className="text-sm text-muted-foreground">—</span>
+          )}
+          <Pencil className="size-3 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+        </button>
+      </td>
+
+      <EditDialog open={open} title={t("sanctionsEditPepDialogTitle")} onClose={() => setOpen(false)} onSave={save} saving={saving}>
+        <label className="flex items-center gap-2 text-sm text-foreground">
+          <input
+            type="checkbox"
+            checked={value}
+            onChange={(e) => setValue(e.target.checked)}
+            className="rounded border-border"
+          />
+          {t("sanctionsMarkAsPepLabel")}
+        </label>
+      </EditDialog>
+    </>
+  );
+}
+
 function NameCell({ sanction, onSaved }: { sanction: SanctionsEntity; onSaved: () => void }) {
   const { t } = useLang();
   const [open, setOpen] = useState(false);
@@ -301,6 +351,7 @@ export function SanctionsTable({ sanctions, page, totalPages, total, onPageChang
                 <th className="px-4 py-3 font-medium">{t("sanctionsColNationality")}</th>
                 <th className="px-4 py-3 font-medium">{t("sanctionsColListingDate")}</th>
                 <th className="px-4 py-3 font-medium">{t("sanctionsColNotes")}</th>
+                <th className="px-4 py-3 font-medium">{t("sanctionsColPep")}</th>
                 <th className="px-4 py-3 font-medium">{t("sanctionsColStatus")}</th>
                 <th className="px-4 py-3 font-medium">{t("sanctionsColActions")}</th>
               </tr>
@@ -308,7 +359,7 @@ export function SanctionsTable({ sanctions, page, totalPages, total, onPageChang
             <tbody>
               {sanctions.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={11} className="px-4 py-8 text-center text-muted-foreground">
                     {t("sanctionsEmptyMessage")}
                   </td>
                 </tr>
@@ -326,6 +377,7 @@ export function SanctionsTable({ sanctions, page, totalPages, total, onPageChang
                     <CountryCell code={s.nationality} />
                     <td className="px-4 py-3">{formatDate(s.listingDate)}</td>
                     <NotesCell sanction={s} onSaved={() => onPageChange(page)} />
+                    <PepCell sanction={s} onSaved={() => onPageChange(page)} />
                     <td className="px-4 py-3">
                       {s.delistedAt ? (
                         <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900 dark:text-red-200">
@@ -361,31 +413,15 @@ export function SanctionsTable({ sanctions, page, totalPages, total, onPageChang
           </table>
         </div>
 
-        <div className="flex items-center justify-between border-t border-border px-4 py-3">
-          <p className="text-sm text-muted-foreground">
-            {t("sanctionsShowingPrefix")} {sanctions.length} {t("sanctionsShowingOfWord")} {total.toLocaleString()}{" "}
-            {t("sanctionsShowingEntriesWord")}
-          </p>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => onPageChange(page - 1)}
-              disabled={page <= 1}
-              className="cursor-pointer rounded-md border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted disabled:cursor-default disabled:opacity-50"
-            >
-              {t("previousPageButton")}
-            </button>
-            <span className="text-sm text-muted-foreground">
-              {t("pageWord")} {page} {t("ofWord")} {totalPages}
-            </span>
-            <button
-              onClick={() => onPageChange(page + 1)}
-              disabled={page >= totalPages}
-              className="cursor-pointer rounded-md border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted disabled:cursor-default disabled:opacity-50"
-            >
-              {t("nextPageButton")}
-            </button>
-          </div>
-        </div>
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          total={total}
+          pageSize={20}
+          itemLabel={t("sanctionsShowingEntriesWord")}
+          onPageChange={onPageChange}
+          className="border-t border-border px-4 py-3"
+        />
       </div>
 
       <ConfirmDialog

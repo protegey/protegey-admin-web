@@ -12,6 +12,7 @@ export interface SanctionsEntity {
   delistedAt: string | null;
   notes: string | null;
   createdAt: string;
+  isPep: boolean;
 }
 
 export interface PaginatedSanctions {
@@ -26,6 +27,7 @@ export interface SanctionsStats {
   total: number;
   active: number;
   delisted: number;
+  pepCount: number;
   byType: { type: string; count: number }[];
   bySource: { source: string; count: number }[];
 }

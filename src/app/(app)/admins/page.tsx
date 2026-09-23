@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import { Pagination } from "@/components/Pagination";
 import { CreateAdminDialogButton } from "./CreateAdminDialogButton";
 import { ResendAdminInvitationButton } from "./ResendAdminInvitationButton";
 import { EditAdminInvitationDialogButton } from "./EditAdminInvitationDialogButton";
@@ -55,7 +54,7 @@ export default async function AdminsPage({
   ]);
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-6">
+    <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-semibold text-foreground">{t(lang, "adminsTitle")}</h1>
@@ -102,8 +101,15 @@ export default async function AdminsPage({
           </table>
         </div>
       ) : null}
-      {invitations.totalPages > 1 ? (
-        <Pagination page={invitations.page} totalPages={invitations.totalPages} total={invitations.total} param="invitationPage" otherParam="page" otherPage={page} lang={lang} />
+      {invitations.data.length > 0 ? (
+        <Pagination
+          page={invitations.page}
+          totalPages={invitations.totalPages}
+          total={invitations.total}
+          pageSize={invitations.limit}
+          itemLabel={t(lang, "adminsInvitationsWord")}
+          hrefFor={(p) => `?invitationPage=${p}&page=${page}`}
+        />
       ) : null}
 
       <div className="overflow-hidden rounded-md border border-border">
@@ -156,42 +162,14 @@ export default async function AdminsPage({
           </tbody>
         </table>
       </div>
-      {admins.totalPages > 1 ? (
-        <Pagination page={admins.page} totalPages={admins.totalPages} total={admins.total} param="page" otherParam="invitationPage" otherPage={invitationPage} lang={lang} />
-      ) : null}
-    </div>
-  );
-}
-
-function Pagination({
-  page,
-  totalPages,
-  total,
-  param,
-  otherParam,
-  otherPage,
-  lang,
-}: {
-  page: number;
-  totalPages: number;
-  total: number;
-  param: string;
-  otherParam: string;
-  otherPage: number;
-  lang: "en" | "fr";
-}) {
-  const href = (nextPage: number) => `?${param}=${nextPage}&${otherParam}=${otherPage}`;
-  return (
-    <div className="flex items-center justify-between text-sm text-muted-foreground">
-      <p>{t(lang, "pageWord")} {page} {t(lang, "ofWord")} {totalPages} — {total}</p>
-      <div className="flex gap-2">
-        <Link aria-disabled={page <= 1} href={href(Math.max(1, page - 1))} className={`flex items-center gap-1 rounded-md border border-border px-3 py-1.5 text-foreground transition-colors hover:bg-muted ${page <= 1 ? "pointer-events-none opacity-40" : ""}`}>
-          <ChevronLeft className="size-4" /> {t(lang, "previousPageButton")}
-        </Link>
-        <Link aria-disabled={page >= totalPages} href={href(Math.min(totalPages, page + 1))} className={`flex items-center gap-1 rounded-md border border-border px-3 py-1.5 text-foreground transition-colors hover:bg-muted ${page >= totalPages ? "pointer-events-none opacity-40" : ""}`}>
-          {t(lang, "nextPageButton")} <ChevronRight className="size-4" />
-        </Link>
-      </div>
+      <Pagination
+        page={admins.page}
+        totalPages={admins.totalPages}
+        total={admins.total}
+        pageSize={admins.limit}
+        itemLabel={t(lang, "adminsWord")}
+        hrefFor={(p) => `?page=${p}&invitationPage=${invitationPage}`}
+      />
     </div>
   );
 }
