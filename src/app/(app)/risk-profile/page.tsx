@@ -159,12 +159,7 @@ function RiskProfileTable({
         total={profiles.total}
         pageSize={profiles.limit}
         itemLabel={t(lang, "riskProfileRecords")}
-        hrefFor={(p) => {
-          const query = new URLSearchParams({ partnerId });
-          if (externalCustomerId) query.set("externalCustomerId", externalCustomerId);
-          if (p > 1) query.set("page", String(p));
-          return `/risk-profile?${query.toString()}`;
-        }}
+        linkTo={{ pathname: "/risk-profile", params: { partnerId, externalCustomerId } }}
         className="border-t border-border px-4 py-3"
       />
     </div>

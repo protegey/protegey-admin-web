@@ -112,7 +112,11 @@ function ReviewTable({ page, kind, lang, partnerId, status }: { page: AmlReviewP
       total={page.total}
       pageSize={page.limit}
       itemLabel={t(lang, "amlReviewsRecords")}
-      hrefFor={(p) => reviewHref(kind, partnerId, status, p)}
+      linkTo={{
+        pathname: "/aml/reviews",
+        params: { tab: kind, partnerId, status: status !== "all" ? status : undefined },
+        pageParam: `${kind}Page`,
+      }}
       className="border-t border-border px-4 py-3"
     />
   </div>;

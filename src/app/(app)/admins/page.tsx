@@ -108,7 +108,7 @@ export default async function AdminsPage({
           total={invitations.total}
           pageSize={invitations.limit}
           itemLabel={t(lang, "adminsInvitationsWord")}
-          hrefFor={(p) => `?invitationPage=${p}&page=${page}`}
+          linkTo={{ params: { page: String(page) }, pageParam: "invitationPage" }}
         />
       ) : null}
 
@@ -168,7 +168,7 @@ export default async function AdminsPage({
         total={admins.total}
         pageSize={admins.limit}
         itemLabel={t(lang, "adminsWord")}
-        hrefFor={(p) => `?page=${p}&invitationPage=${invitationPage}`}
+        linkTo={{ params: { invitationPage: String(invitationPage) }, pageParam: "page" }}
       />
     </div>
   );

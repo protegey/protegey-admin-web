@@ -189,12 +189,9 @@ function MatchesTable({
         total={page.total}
         pageSize={page.limit}
         itemLabel={t(lang, "screeningMatchesRecords")}
-        hrefFor={(p) => {
-          const query = new URLSearchParams({ partnerId });
-          if (externalCustomerId) query.set("externalCustomerId", externalCustomerId);
-          if (status !== "all") query.set("status", status);
-          if (p > 1) query.set("page", String(p));
-          return `/screening/matches?${query.toString()}`;
+        linkTo={{
+          pathname: "/screening/matches",
+          params: { partnerId, externalCustomerId, status: status !== "all" ? status : undefined },
         }}
         className="border-t border-border px-4 py-3"
       />
