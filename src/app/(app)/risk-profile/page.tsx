@@ -7,9 +7,23 @@ import { t } from "@/lib/i18n/strings";
 import { RefreshButton } from "@/components/RefreshButton";
 import { Pagination } from "@/components/Pagination";
 import { getRiskProfiles } from "./actions";
-import type { PaginatedRiskProfiles } from "./types";
+import type { PaginatedRiskProfiles, RiskProfile } from "./types";
 
 export const metadata: Metadata = { title: "Risk Profiles — Protegey Admin" };
+
+const RISK_LEVEL_STYLES: Record<RiskProfile["riskLevel"], string> = {
+  low: "bg-muted text-muted-foreground",
+  medium: "bg-amber-500/15 text-amber-600",
+  high: "bg-orange-500/15 text-orange-600",
+  critical: "bg-destructive/15 text-destructive",
+};
+
+const RISK_LEVEL_LABEL_KEYS: Record<RiskProfile["riskLevel"], Parameters<typeof t>[1]> = {
+  low: "riskLevelLow",
+  medium: "riskLevelMedium",
+  high: "riskLevelHigh",
+  critical: "riskLevelCritical",
+};
 
 export default async function RiskProfilesPage({
   searchParams,
@@ -123,7 +137,14 @@ function RiskProfileTable({
               <td className="px-4 py-3 font-mono text-xs">{profile.externalCustomerId}</td>
               <td className="px-4 py-3">{profile.cumulativeScore}</td>
               <td className="px-4 py-3">{profile.decayedScore}</td>
-              <td className="px-4 py-3">{profile.weightedScore}</td>
+              <td className="px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold">{profile.weightedScore}</span>
+                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${RISK_LEVEL_STYLES[profile.riskLevel]}`}>
+                    {t(lang, RISK_LEVEL_LABEL_KEYS[profile.riskLevel])}
+                  </span>
+                </div>
+              </td>
               <td className="px-4 py-3">
                 {profile.topCategory ? (
                   <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">

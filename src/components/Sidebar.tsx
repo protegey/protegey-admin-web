@@ -21,6 +21,19 @@ function isActivePath(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+/**
+ * Picks the single most specific matching child (longest href) instead of marking every child
+ * whose href is a path prefix of the current route — without this, "/screening" and
+ * "/screening/matches" both light up while on "/screening/matches".
+ */
+function findActiveChild(pathname: string, children: NavChild[]): NavChild | undefined {
+  const matches = children.filter((child) => isActivePath(pathname, child.href));
+  return matches.reduce<NavChild | undefined>((best, child) => {
+    if (!best) return child;
+    return child.href.length > best.href.length ? child : best;
+  }, undefined);
+}
+
 export function Sidebar({ navItems, footer }: { navItems: NavItem[]; footer: React.ReactNode }) {
   const pathname = usePathname();
 
@@ -33,6 +46,7 @@ export function Sidebar({ navItems, footer }: { navItems: NavItem[]; footer: Rea
       <nav className="flex flex-1 flex-col gap-1 px-3">
         {navItems.map((item) => {
           if (item.children) {
+            const activeChild = findActiveChild(pathname, item.children);
             return (
               <div key={item.label} className="flex flex-col gap-1">
                 <div className="flex items-center gap-2.5 px-3 py-2 text-sm font-medium text-muted-foreground">
@@ -41,7 +55,7 @@ export function Sidebar({ navItems, footer }: { navItems: NavItem[]; footer: Rea
                 </div>
                 <div className="flex flex-col gap-1 pl-6">
                   {item.children.map((child) => {
-                    const isActive = isActivePath(pathname, child.href);
+                    const isActive = child === activeChild;
                     return (
                       <Link
                         key={child.href}

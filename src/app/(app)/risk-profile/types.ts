@@ -29,6 +29,9 @@ export interface RiskProfile {
   breakdown: RiskCategoryBreakdown[];
   decayedScore: number;
   weightedScore: number;
+  /** weightedScore turned into an actionable label — "high" starts just above what any single
+   * alert could produce alone, so it always reflects a real pattern, not one event. */
+  riskLevel: "low" | "medium" | "high" | "critical";
   topCategory: string | null;
   /** Newest first. */
   history: RiskProfileHistoryEntry[];

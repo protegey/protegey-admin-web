@@ -9,6 +9,20 @@ import type { RiskProfile, RiskProfileHistoryEntry } from "../types";
 
 export const metadata: Metadata = { title: "Risk Profile — Protegey Admin" };
 
+const RISK_LEVEL_STYLES: Record<RiskProfile["riskLevel"], string> = {
+  low: "bg-muted text-muted-foreground",
+  medium: "bg-amber-500/15 text-amber-600",
+  high: "bg-orange-500/15 text-orange-600",
+  critical: "bg-destructive/15 text-destructive",
+};
+
+const RISK_LEVEL_LABEL_KEYS: Record<RiskProfile["riskLevel"], Parameters<typeof t>[1]> = {
+  low: "riskLevelLow",
+  medium: "riskLevelMedium",
+  high: "riskLevelHigh",
+  critical: "riskLevelCritical",
+};
+
 const DIRECTION_ICON = {
   increased: TrendingUp,
   decreased: TrendingDown,
@@ -95,7 +109,16 @@ function RiskProfileDetail({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <ScoreCard label={t(lang, "riskProfileCumulativeScoreLabel")} value={profile.cumulativeScore} />
         <ScoreCard label={t(lang, "riskProfileDecayedScoreLabel")} value={profile.decayedScore} hint={t(lang, "riskProfileDecayedScoreHint")} />
-        <ScoreCard label={t(lang, "riskProfileWeightedScoreLabel")} value={profile.weightedScore} hint={t(lang, "riskProfileWeightedScoreHint")} />
+        <ScoreCard
+          label={t(lang, "riskProfileWeightedScoreLabel")}
+          value={profile.weightedScore}
+          hint={t(lang, "riskProfileWeightedScoreHint")}
+          riskBadge={
+            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${RISK_LEVEL_STYLES[profile.riskLevel]}`}>
+              {t(lang, RISK_LEVEL_LABEL_KEYS[profile.riskLevel])}
+            </span>
+          }
+        />
       </div>
 
       <div>
@@ -149,11 +172,14 @@ function RiskProfileDetail({
   );
 }
 
-function ScoreCard({ label, value, hint }: { label: string; value: number; hint?: string }) {
+function ScoreCard({ label, value, hint, riskBadge }: { label: string; value: number; hint?: string; riskBadge?: React.ReactNode }) {
   return (
     <div className="rounded-lg border border-border bg-card p-5">
       <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p className="mt-1 text-2xl font-bold">{value}</p>
+      <div className="mt-1 flex items-center gap-2">
+        <p className="text-2xl font-bold">{value}</p>
+        {riskBadge}
+      </div>
       {hint ? <p className="mt-1 text-xs text-muted-foreground">{hint}</p> : null}
     </div>
   );
