@@ -327,6 +327,8 @@ const STRINGS = {
   partnersTeamBlockButton: { en: "Block", fr: "Bloquer" },
   partnersTeamUnblockButton: { en: "Unblock", fr: "Débloquer" },
   partnersTeamNoAgents: { en: "No agents yet.", fr: "Aucun agent pour le moment." },
+  partnersTeamAgentsWord: { en: "agents", fr: "agents" },
+  partnersTeamInvitationsWord: { en: "invitations", fr: "invitations" },
   partnersTeamBlockConfirmTitle: { en: "Block this agent?", fr: "Bloquer cet agent ?" },
   partnersTeamUnblockConfirmTitle: { en: "Unblock this agent?", fr: "Débloquer cet agent ?" },
   partnersTeamBlockConfirmDescription: {

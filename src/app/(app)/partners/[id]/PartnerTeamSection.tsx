@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { ConfirmActionDialog } from "@/components/ConfirmActionDialog";
+import { Pagination } from "@/components/Pagination";
 import { useLang } from "@/lib/i18n/LangProvider";
 import {
   getPartnerTeam,
@@ -12,6 +13,7 @@ import {
   type TeamMember,
   type PendingInvitation,
   type AssignableRole,
+  type PaginatedResult,
 } from "../team-actions";
 import { EditPartnerInvitationDialogButton } from "./EditPartnerInvitationDialogButton";
 
@@ -22,24 +24,34 @@ export function PartnerTeamSection({
   roles,
 }: {
   partnerId: string;
-  initialMembers: TeamMember[];
-  initialInvitations: PendingInvitation[];
+  initialMembers: PaginatedResult<TeamMember>;
+  initialInvitations: PaginatedResult<PendingInvitation>;
   roles: AssignableRole[];
 }) {
   const { t } = useLang();
-  const [members, setMembers] = useState(initialMembers);
-  const [invitations, setInvitations] = useState(initialInvitations);
+  const [membersPage, setMembersPage] = useState(initialMembers);
+  const [invitationsPage, setInvitationsPage] = useState(initialInvitations);
   const [resendingId, setResendingId] = useState<string | null>(null);
   const [statusTarget, setStatusTarget] = useState<TeamMember | null>(null);
   const [statusPending, setStatusPending] = useState(false);
+  const members = membersPage.data;
+  const invitations = invitationsPage.data;
 
   async function reload() {
     const [nextMembers, nextInvitations] = await Promise.all([
-      getPartnerTeam(partnerId),
-      getPartnerPendingInvitations(partnerId),
+      getPartnerTeam(partnerId, membersPage.page),
+      getPartnerPendingInvitations(partnerId, invitationsPage.page),
     ]);
-    setMembers(nextMembers);
-    setInvitations(nextInvitations);
+    setMembersPage(nextMembers);
+    setInvitationsPage(nextInvitations);
+  }
+
+  async function goToMembersPage(page: number) {
+    setMembersPage(await getPartnerTeam(partnerId, page));
+  }
+
+  async function goToInvitationsPage(page: number) {
+    setInvitationsPage(await getPartnerPendingInvitations(partnerId, page));
   }
 
   async function handleResend(invitationId: string) {
@@ -101,6 +113,14 @@ export function PartnerTeamSection({
               </div>
             </div>
           ))}
+          <Pagination
+            page={invitationsPage.page}
+            totalPages={invitationsPage.totalPages}
+            total={invitationsPage.total}
+            pageSize={invitationsPage.limit}
+            itemLabel={t("partnersTeamInvitationsWord")}
+            onPageChange={goToInvitationsPage}
+          />
         </div>
       ) : null}
 
@@ -138,6 +158,14 @@ export function PartnerTeamSection({
           </div>
         ))}
         {members.length === 0 ? <p className="text-sm text-muted-foreground">{t("partnersTeamNoAgents")}</p> : null}
+        <Pagination
+          page={membersPage.page}
+          totalPages={membersPage.totalPages}
+          total={membersPage.total}
+          pageSize={membersPage.limit}
+          itemLabel={t("partnersTeamAgentsWord")}
+          onPageChange={goToMembersPage}
+        />
       </div>
 
       <ConfirmActionDialog

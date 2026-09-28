@@ -33,12 +33,20 @@ export interface AssignableRole {
   displayName: string;
 }
 
-export async function getPartnerTeam(partnerId: string): Promise<TeamMember[]> {
-  return apiFetch<TeamMember[]>(`/partners/${partnerId}/team`);
+export interface PaginatedResult<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
-export async function getPartnerPendingInvitations(partnerId: string): Promise<PendingInvitation[]> {
-  return apiFetch<PendingInvitation[]>(`/partners/${partnerId}/team/invitations`);
+export async function getPartnerTeam(partnerId: string, page = 1): Promise<PaginatedResult<TeamMember>> {
+  return apiFetch<PaginatedResult<TeamMember>>(`/partners/${partnerId}/team?page=${page}&limit=20`);
+}
+
+export async function getPartnerPendingInvitations(partnerId: string, page = 1): Promise<PaginatedResult<PendingInvitation>> {
+  return apiFetch<PaginatedResult<PendingInvitation>>(`/partners/${partnerId}/team/invitations?page=${page}&limit=20`);
 }
 
 export async function getAssignablePartnerRoles(): Promise<AssignableRole[]> {

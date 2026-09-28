@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { getLang } from "@/lib/i18n/lang";
 import { t } from "@/lib/i18n/strings";
 import { RefreshButton } from "@/components/RefreshButton";
-import { getAmlSummary } from "./actions";
+import { Pagination } from "@/components/Pagination";
+import { getAmlSummary, getAmlPartnerBreakdown } from "./actions";
 
 export const metadata: Metadata = { title: "AML — Protegey Admin" };
 
@@ -18,9 +19,10 @@ const metrics = [
   ["sarSubmitted", "amlSarSubmitted"],
 ] as const;
 
-export default async function AmlPage({ searchParams }: { searchParams: Promise<{ partnerId?: string }> }) {
-  const [{ partnerId }, lang] = await Promise.all([searchParams, getLang()]);
-  const summary = await getAmlSummary(partnerId);
+export default async function AmlPage({ searchParams }: { searchParams: Promise<{ partnerId?: string; page?: string }> }) {
+  const [{ partnerId, page: pageParam }, lang] = await Promise.all([searchParams, getLang()]);
+  const page = Math.max(1, Number(pageParam) || 1);
+  const [summary, breakdown] = await Promise.all([getAmlSummary(partnerId), getAmlPartnerBreakdown(page, partnerId)]);
   const partnerOptions = partnerId ? (await getAmlSummary()).partners : summary.partners;
 
   return (
@@ -55,7 +57,7 @@ export default async function AmlPage({ searchParams }: { searchParams: Promise<
             <tr>{(["amlPartner", "amlOpenAlerts", "amlOverdueAlerts", "amlOpenEdd", "amlConfirmedPep", "amlSarDrafts"] as const).map((label) => <th key={label} className="px-4 py-3 font-medium">{t(lang, label)}</th>)}</tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {summary.partners.map((partner) => <tr key={partner.partnerId}>
+            {breakdown.data.map((partner) => <tr key={partner.partnerId}>
               <td className="px-4 py-3 font-medium">{partner.partnerName}</td>
               <td className="px-4 py-3">{partner.openAlerts.toLocaleString()}</td>
               <td className="px-4 py-3">{partner.overdueAlerts.toLocaleString()}</td>
@@ -63,9 +65,18 @@ export default async function AmlPage({ searchParams }: { searchParams: Promise<
               <td className="px-4 py-3">{partner.confirmedPep.toLocaleString()}</td>
               <td className="px-4 py-3">{partner.sarDrafts.toLocaleString()}</td>
             </tr>)}
-            {summary.partners.length === 0 && <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">{t(lang, "amlNoPartners")}</td></tr>}
+            {breakdown.data.length === 0 && <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">{t(lang, "amlNoPartners")}</td></tr>}
           </tbody>
         </table>
+        <Pagination
+          page={breakdown.page}
+          totalPages={breakdown.totalPages}
+          total={breakdown.total}
+          pageSize={breakdown.limit}
+          itemLabel={t(lang, "partnersWord")}
+          linkTo={{ pathname: "/aml", params: { partnerId } }}
+          className="border-t border-border px-4 py-3"
+        />
       </div>
     </section>
   );

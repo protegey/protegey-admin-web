@@ -46,6 +46,30 @@ export async function getAmlSummary(partnerId?: string): Promise<AmlSummary> {
   return response.json();
 }
 
+export interface AmlPartnerBreakdownPage {
+  data: AmlPartnerSummary[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export async function getAmlPartnerBreakdown(page: number = 1, partnerId?: string): Promise<AmlPartnerBreakdownPage> {
+  const query = new URLSearchParams({ page: String(page), limit: "20" });
+  if (partnerId) query.set("partnerId", partnerId);
+
+  const response = await fetch(`${BACKEND_API_URL}/admin/aml/partners?${query.toString()}`, {
+    headers: await authHeaders(),
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error(`AML partner breakdown request failed with status ${response.status}`);
+  }
+
+  return response.json();
+}
+
 export interface AmlReviewPage {
   data: AmlReviewRow[];
   total: number;

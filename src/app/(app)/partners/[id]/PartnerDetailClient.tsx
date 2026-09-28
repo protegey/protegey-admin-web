@@ -11,7 +11,7 @@ import { useLang } from "@/lib/i18n/LangProvider";
 import type { StringKey } from "@/lib/i18n/strings";
 import { PartnerFormDialog, type EditablePartner } from "../PartnerFormDialog";
 import { decidePartner, getPartnerDocuments, updatePartnerKycProvider, type PartnerDocument } from "../documents-actions";
-import type { TeamMember, PendingInvitation, AssignableRole } from "../team-actions";
+import type { TeamMember, PendingInvitation, AssignableRole, PaginatedResult } from "../team-actions";
 import { DocumentReviewRow } from "./DocumentReviewRow";
 import { PartnerTeamSection } from "./PartnerTeamSection";
 
@@ -84,8 +84,8 @@ export function PartnerDetailClient({
 }: {
   partner: Partner;
   documents: PartnerDocument[];
-  team: TeamMember[];
-  invitations: PendingInvitation[];
+  team: PaginatedResult<TeamMember>;
+  invitations: PaginatedResult<PendingInvitation>;
   roles: AssignableRole[];
 }) {
   const { t } = useLang();
