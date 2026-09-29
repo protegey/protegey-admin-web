@@ -12,6 +12,7 @@ import {
   type PartnerContract,
   type BillingAuditEvent,
   type ContractCycleUsage,
+  type DefaultContractTemplate,
 } from "./contract-actions";
 
 const inputClass =
@@ -39,16 +40,20 @@ interface FormState {
   currency: string;
 }
 
-function toFormState(contract: PartnerContract | null): FormState {
+/** A partner's own saved contract always takes priority; the platform-wide default template
+ * (admin-editable on the Settings page) only fills the form when this partner has no contract
+ * of their own yet. */
+function toFormState(contract: PartnerContract | null, defaultTemplate: DefaultContractTemplate): FormState {
+  const source = contract ?? defaultTemplate;
   return {
-    standardMonthlyFee: contract?.standardMonthlyFee ?? "",
-    discountType: contract?.discountType ?? "percent",
-    discountValue: contract?.discountValue ?? "0",
-    includedTransactions: contract?.includedTransactions ?? "",
-    overageRate: contract?.overageRate ?? "",
-    paymentTermsDays: contract ? String(contract.paymentTermsDays) : "15",
-    taxRate: contract?.taxRate ?? "0",
-    currency: contract?.currency ?? "USD",
+    standardMonthlyFee: source.standardMonthlyFee,
+    discountType: source.discountType,
+    discountValue: source.discountValue,
+    includedTransactions: source.includedTransactions,
+    overageRate: source.overageRate,
+    paymentTermsDays: String(source.paymentTermsDays),
+    taxRate: source.taxRate,
+    currency: source.currency,
   };
 }
 
@@ -57,14 +62,16 @@ export function PartnerContractSection({
   initialContract,
   initialHistory,
   initialUsage,
+  defaultTemplate,
 }: {
   partnerId: string;
   initialContract: PartnerContract | null;
   initialHistory: BillingAuditEvent[];
   initialUsage: ContractCycleUsage | null;
+  defaultTemplate: DefaultContractTemplate;
 }) {
   const { t, lang } = useLang();
-  const [form, setForm] = useState<FormState>(toFormState(initialContract));
+  const [form, setForm] = useState<FormState>(toFormState(initialContract, defaultTemplate));
   const [history, setHistory] = useState(initialHistory);
   const [usage, setUsage] = useState(initialUsage);
   const [hasContract, setHasContract] = useState(initialContract !== null);

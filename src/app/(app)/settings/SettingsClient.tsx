@@ -4,10 +4,159 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useLang } from "@/lib/i18n/LangProvider";
 import type { StringKey } from "@/lib/i18n/strings";
-import { updateKycProvider, updateNumericSetting, type KycProvider, type NumericSettingKey, type PlatformSettings } from "./actions";
+import {
+  updateKycProvider,
+  updateNumericSetting,
+  updateDefaultContractTemplate,
+  type KycProvider,
+  type NumericSettingKey,
+  type PlatformSettings,
+  type ContractDiscountType,
+  type DefaultContractTemplate,
+} from "./actions";
 
 const inputClass =
   "w-24 rounded-md border border-border bg-background px-2.5 py-1.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring";
+
+const contractInputClass =
+  "rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring";
+
+function DefaultContractTemplateForm({
+  initialTemplate,
+  onSave,
+}: {
+  initialTemplate: DefaultContractTemplate;
+  onSave: (template: DefaultContractTemplate) => Promise<void>;
+}) {
+  const { t } = useLang();
+  const [form, setForm] = useState(initialTemplate);
+  const [pending, setPending] = useState(false);
+  const dirty = JSON.stringify(form) !== JSON.stringify(initialTemplate);
+
+  function update<K extends keyof DefaultContractTemplate>(key: K, value: DefaultContractTemplate[K]) {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setPending(true);
+    await onSave(form);
+    setPending(false);
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <label className="flex flex-col gap-1">
+        <span className="text-xs font-medium text-muted-foreground">{t("billingFieldStandardMonthlyFee")}</span>
+        <input
+          className={contractInputClass}
+          type="number"
+          step="0.01"
+          min="0"
+          required
+          value={form.standardMonthlyFee}
+          onChange={(e) => update("standardMonthlyFee", e.target.value)}
+        />
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className="text-xs font-medium text-muted-foreground">{t("billingFieldDiscountType")}</span>
+        <select
+          className={contractInputClass}
+          value={form.discountType}
+          onChange={(e) => update("discountType", e.target.value as ContractDiscountType)}
+        >
+          <option value="percent">{t("billingDiscountTypePercent")}</option>
+          <option value="fixed">{t("billingDiscountTypeFixed")}</option>
+        </select>
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className="text-xs font-medium text-muted-foreground">{t("billingFieldDiscountValue")}</span>
+        <input
+          className={contractInputClass}
+          type="number"
+          step="0.01"
+          min="0"
+          value={form.discountValue}
+          onChange={(e) => update("discountValue", e.target.value)}
+        />
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className="text-xs font-medium text-muted-foreground">{t("billingFieldIncludedTransactions")}</span>
+        <input
+          className={contractInputClass}
+          type="number"
+          step="1"
+          min="0"
+          required
+          value={form.includedTransactions}
+          onChange={(e) => update("includedTransactions", e.target.value)}
+        />
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className="text-xs font-medium text-muted-foreground">{t("billingFieldOverageRate")}</span>
+        <input
+          className={contractInputClass}
+          type="number"
+          step="0.000001"
+          min="0"
+          required
+          value={form.overageRate}
+          onChange={(e) => update("overageRate", e.target.value)}
+        />
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className="text-xs font-medium text-muted-foreground">{t("billingFieldPaymentTermsDays")}</span>
+        <input
+          className={contractInputClass}
+          type="number"
+          step="1"
+          min="1"
+          required
+          value={form.paymentTermsDays}
+          onChange={(e) => update("paymentTermsDays", Number(e.target.value))}
+        />
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className="text-xs font-medium text-muted-foreground">{t("billingFieldTaxRate")}</span>
+        <input
+          className={contractInputClass}
+          type="number"
+          step="0.01"
+          min="0"
+          value={form.taxRate}
+          onChange={(e) => update("taxRate", e.target.value)}
+        />
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className="text-xs font-medium text-muted-foreground">{t("billingFieldCurrency")}</span>
+        <input
+          className={contractInputClass}
+          maxLength={3}
+          required
+          value={form.currency}
+          onChange={(e) => update("currency", e.target.value.toUpperCase())}
+        />
+      </label>
+
+      <div className="flex items-end sm:col-span-2 lg:col-span-3">
+        <button
+          type="submit"
+          disabled={!dirty || pending}
+          className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {pending ? t("settingsDefaultContractSavingEllipsis") : t("settingsDefaultContractSaveButton")}
+        </button>
+      </div>
+    </form>
+  );
+}
 
 const NUMERIC_SETTINGS: { key: NumericSettingKey; labelKey: StringKey; unitKey: StringKey }[] = [
   { key: "client_invitation_ttl_hours", labelKey: "settingsClientInvitationTtlLabel", unitKey: "settingsHoursSuffix" },
@@ -94,6 +243,16 @@ export function SettingsClient({ initialSettings }: { initialSettings: PlatformS
     }
   }
 
+  async function handleDefaultContractSave(template: DefaultContractTemplate) {
+    const result = await updateDefaultContractTemplate(template);
+    if (result.error) {
+      toast.error(result.error);
+    } else {
+      setSettings((prev) => ({ ...prev, defaultContractTemplate: template }));
+      toast.success(t("settingsDefaultContractSavedToast"));
+    }
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -144,6 +303,12 @@ export function SettingsClient({ initialSettings }: { initialSettings: PlatformS
             />
           ))}
         </div>
+      </div>
+
+      <div className="rounded-md border border-border bg-card p-5">
+        <p className="text-sm font-semibold text-foreground">{t("settingsDefaultContractTitle")}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">{t("settingsDefaultContractHint")}</p>
+        <DefaultContractTemplateForm initialTemplate={settings.defaultContractTemplate} onSave={handleDefaultContractSave} />
       </div>
     </div>
   );

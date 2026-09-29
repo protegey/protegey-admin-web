@@ -21,7 +21,7 @@ import type { TeamMember, PendingInvitation, AssignableRole, PaginatedResult } f
 import { DocumentReviewRow } from "./DocumentReviewRow";
 import { PartnerTeamSection } from "./PartnerTeamSection";
 import { PartnerContractSection } from "./PartnerContractSection";
-import type { PartnerContract, BillingAuditEvent, ContractCycleUsage } from "./contract-actions";
+import type { PartnerContract, BillingAuditEvent, ContractCycleUsage, DefaultContractTemplate } from "./contract-actions";
 
 interface Partner {
   id: string;
@@ -93,6 +93,7 @@ export function PartnerDetailClient({
   contract,
   billingHistory,
   usage,
+  defaultContractTemplate,
 }: {
   partner: Partner;
   documents: PartnerDocument[];
@@ -102,6 +103,7 @@ export function PartnerDetailClient({
   contract: PartnerContract | null;
   billingHistory: BillingAuditEvent[];
   usage: ContractCycleUsage | null;
+  defaultContractTemplate: DefaultContractTemplate;
 }) {
   const { t } = useLang();
   const router = useRouter();
@@ -342,7 +344,13 @@ export function PartnerDetailClient({
         ) : null}
       </div>
 
-      <PartnerContractSection partnerId={partner.id} initialContract={contract} initialHistory={billingHistory} initialUsage={usage} />
+      <PartnerContractSection
+        partnerId={partner.id}
+        initialContract={contract}
+        initialHistory={billingHistory}
+        initialUsage={usage}
+        defaultTemplate={defaultContractTemplate}
+      />
 
       <PartnerTeamSection partnerId={partner.id} initialMembers={team} initialInvitations={invitations} roles={roles} />
 

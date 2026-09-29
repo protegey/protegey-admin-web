@@ -41,6 +41,24 @@ export async function getPartnerContract(partnerId: string): Promise<PartnerCont
   return apiFetch<PartnerContract | null>(`/partners/${partnerId}/contract`);
 }
 
+export interface DefaultContractTemplate {
+  standardMonthlyFee: string;
+  discountType: ContractDiscountType;
+  discountValue: string;
+  includedTransactions: string;
+  overageRate: string;
+  paymentTermsDays: number;
+  taxRate: string;
+  currency: string;
+}
+
+/** Pre-fills the form for a partner with no contract yet — an already-saved contract always
+ * takes priority over this (see PartnerContractSection.toFormState). */
+export async function getDefaultContractTemplate(): Promise<DefaultContractTemplate> {
+  const settings = await apiFetch<{ defaultContractTemplate: DefaultContractTemplate }>("/settings");
+  return settings.defaultContractTemplate;
+}
+
 export async function upsertPartnerContract(partnerId: string, input: UpsertContractInput): Promise<ActionResult> {
   const lang = await getLang();
   try {

@@ -817,6 +817,14 @@ const STRINGS = {
   settingsSaveButton: { en: "Save", fr: "Enregistrer" },
   settingsSavingEllipsis: { en: "Saving…", fr: "Enregistrement…" },
   settingsNumericSettingUpdatedToast: { en: "Setting updated.", fr: "Paramètre mis à jour." },
+  settingsDefaultContractTitle: { en: "Default contract template", fr: "Modèle de contrat par défaut" },
+  settingsDefaultContractHint: {
+    en: "Pre-fills a new partner's billing contract form — never overrides a contract that already exists.",
+    fr: "Pré-remplit le formulaire de contrat de facturation d'un nouveau partenaire — ne modifie jamais un contrat déjà existant.",
+  },
+  settingsDefaultContractSaveButton: { en: "Save defaults", fr: "Enregistrer les valeurs par défaut" },
+  settingsDefaultContractSavingEllipsis: { en: "Saving…", fr: "Enregistrement…" },
+  settingsDefaultContractSavedToast: { en: "Default contract template updated.", fr: "Modèle de contrat par défaut mis à jour." },
 
   dashboardPageTitle: { en: "Dashboard", fr: "Tableau de bord" },
   dashboardPageSubtitle: { en: "An overview of every partner on the platform.", fr: "Une vue d'ensemble de tous les partenaires de la plateforme." },
