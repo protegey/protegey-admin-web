@@ -49,8 +49,10 @@ export async function getPartnerPendingInvitations(partnerId: string, page = 1):
   return apiFetch<PaginatedResult<PendingInvitation>>(`/partners/${partnerId}/team/invitations?page=${page}&limit=20`);
 }
 
-export async function getAssignablePartnerRoles(): Promise<AssignableRole[]> {
-  return apiFetch<AssignableRole[]>("/roles?scope=partner");
+/** `GET /roles?scope=partner` only ever resolves to the CALLER's own partner — none, for an
+ * admin session — so the admin panel uses this partner-id-scoped equivalent instead. */
+export async function getAssignablePartnerRoles(partnerId: string): Promise<AssignableRole[]> {
+  return apiFetch<AssignableRole[]>(`/partners/${partnerId}/team/roles`);
 }
 
 export async function resendPartnerInvitation(partnerId: string, invitationId: string): Promise<ActionResult> {

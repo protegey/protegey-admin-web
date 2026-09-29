@@ -4,16 +4,25 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Gauge, ListChecks, Pencil } from "lucide-react";
+import { Gauge, ListChecks, Pencil, Ban, PlayCircle } from "lucide-react";
 import { ConfirmActionDialog } from "@/components/ConfirmActionDialog";
 import { PartnerDetailIllustration } from "@/components/PartnerDetailIllustration";
 import { useLang } from "@/lib/i18n/LangProvider";
 import type { StringKey } from "@/lib/i18n/strings";
 import { PartnerFormDialog, type EditablePartner } from "../PartnerFormDialog";
-import { decidePartner, getPartnerDocuments, updatePartnerKycProvider, type PartnerDocument } from "../documents-actions";
+import {
+  decidePartner,
+  getPartnerDocuments,
+  reactivatePartner,
+  suspendPartner,
+  updatePartnerKycProvider,
+  type PartnerDocument,
+} from "../documents-actions";
 import type { TeamMember, PendingInvitation, AssignableRole, PaginatedResult } from "../team-actions";
 import { DocumentReviewRow } from "./DocumentReviewRow";
 import { PartnerTeamSection } from "./PartnerTeamSection";
+import { PartnerContractSection } from "./PartnerContractSection";
+import type { PartnerContract, BillingAuditEvent } from "./contract-actions";
 
 interface Partner {
   id: string;
@@ -28,6 +37,8 @@ interface Partner {
   country: string | null;
   description: string | null;
   rejectionReason: string | null;
+  suspendedAt: string | null;
+  suspensionReason: string | null;
   createdAt: string;
   activatedAt: string | null;
   kycProvider: "didit" | "facetec";
@@ -81,12 +92,16 @@ export function PartnerDetailClient({
   team,
   invitations,
   roles,
+  contract,
+  billingHistory,
 }: {
   partner: Partner;
   documents: PartnerDocument[];
   team: PaginatedResult<TeamMember>;
   invitations: PaginatedResult<PendingInvitation>;
   roles: AssignableRole[];
+  contract: PartnerContract | null;
+  billingHistory: BillingAuditEvent[];
 }) {
   const { t } = useLang();
   const router = useRouter();
@@ -97,10 +112,18 @@ export function PartnerDetailClient({
   const [confirmDecision, setConfirmDecision] = useState<"approve" | "reject" | null>(null);
   const [decisionPending, setDecisionPending] = useState(false);
   const [kycProviderPending, setKycProviderPending] = useState(false);
+  const [suspendReason, setSuspendReason] = useState("");
+  const [confirmSuspension, setConfirmSuspension] = useState<"suspend" | "reactivate" | null>(null);
+  const [suspensionPending, setSuspensionPending] = useState(false);
 
   function closeDecisionConfirm() {
     setConfirmDecision(null);
     setDecisionReason("");
+  }
+
+  function closeSuspensionConfirm() {
+    setConfirmSuspension(null);
+    setSuspendReason("");
   }
 
   useEffect(() => {
@@ -145,6 +168,36 @@ export function PartnerDetailClient({
     } else {
       toast.success(t("partnersRejectedToast"));
       closeDecisionConfirm();
+      router.refresh();
+    }
+  }
+
+  async function handleSuspend() {
+    if (suspendReason.trim().length < 5) {
+      toast.error(t("partnersSuspendReasonRequiredToast"));
+      return;
+    }
+    setSuspensionPending(true);
+    const result = await suspendPartner(partner.id, suspendReason.trim());
+    setSuspensionPending(false);
+    if (result.error) {
+      toast.error(result.error);
+    } else {
+      toast.success(t("partnersSuspendedToast"));
+      closeSuspensionConfirm();
+      router.refresh();
+    }
+  }
+
+  async function handleReactivate() {
+    setSuspensionPending(true);
+    const result = await reactivatePartner(partner.id);
+    setSuspensionPending(false);
+    if (result.error) {
+      toast.error(result.error);
+    } else {
+      toast.success(t("partnersReactivatedToast"));
+      closeSuspensionConfirm();
       router.refresh();
     }
   }
@@ -218,6 +271,25 @@ export function PartnerDetailClient({
             <Pencil className="size-3.5" />
             {t("editButton")}
           </button>
+          {partner.status === "suspended" ? (
+            <button
+              type="button"
+              onClick={() => setConfirmSuspension("reactivate")}
+              className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            >
+              <PlayCircle className="size-3.5" />
+              {t("partnersReactivateButton")}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmSuspension("suspend")}
+              className="flex items-center gap-1.5 rounded-md border border-destructive/30 px-3 py-1.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+            >
+              <Ban className="size-3.5" />
+              {t("partnersSuspendButton")}
+            </button>
+          )}
         </div>
       </div>
 
@@ -225,6 +297,13 @@ export function PartnerDetailClient({
         <div className="rounded-md border border-destructive/30 bg-destructive/10 p-4">
           <p className="text-sm font-semibold text-destructive">{t("partnersApplicationRejectedTitle")}</p>
           <p className="mt-1 text-sm text-destructive">{partner.rejectionReason}</p>
+        </div>
+      ) : null}
+
+      {partner.status === "suspended" && partner.suspensionReason ? (
+        <div className="rounded-md border border-destructive/30 bg-destructive/10 p-4">
+          <p className="text-sm font-semibold text-destructive">{t("partnersSuspensionReasonLabel")}</p>
+          <p className="mt-1 text-sm text-destructive">{partner.suspensionReason}</p>
         </div>
       ) : null}
 
@@ -310,6 +389,8 @@ export function PartnerDetailClient({
         ) : null}
       </div>
 
+      <PartnerContractSection partnerId={partner.id} initialContract={contract} initialHistory={billingHistory} />
+
       <PartnerTeamSection partnerId={partner.id} initialMembers={team} initialInvitations={invitations} roles={roles} />
 
       <PartnerFormDialog open={editOpen} onClose={() => setEditOpen(false)} partner={editablePartner} roles={roles} />
@@ -346,6 +427,39 @@ export function PartnerDetailClient({
           className="w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
         />
       </ConfirmActionDialog>
+
+      <ConfirmActionDialog
+        open={confirmSuspension === "suspend"}
+        onClose={closeSuspensionConfirm}
+        onConfirm={handleSuspend}
+        title={`${t("partnersSuspendConfirmTitleBefore")}${partner.name}${t("partnersSuspendConfirmTitleAfter")}`}
+        description={t("partnersSuspendConfirmDescription")}
+        confirmLabel={t("partnersConfirmSuspensionLabel")}
+        pendingLabel={t("partnersSuspendingEllipsis")}
+        pending={suspensionPending}
+        confirmDisabled={suspendReason.trim().length < 5}
+        variant="destructive"
+      >
+        <textarea
+          value={suspendReason}
+          onChange={(e) => setSuspendReason(e.target.value)}
+          placeholder={t("partnersSuspendReasonPlaceholder")}
+          rows={3}
+          autoFocus
+          className="w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+        />
+      </ConfirmActionDialog>
+
+      <ConfirmActionDialog
+        open={confirmSuspension === "reactivate"}
+        onClose={closeSuspensionConfirm}
+        onConfirm={handleReactivate}
+        title={`${t("partnersReactivateConfirmTitleBefore")}${partner.name}${t("partnersReactivateConfirmTitleAfter")}`}
+        description={t("partnersReactivateConfirmDescription")}
+        confirmLabel={t("partnersReactivateButton")}
+        pendingLabel={t("partnersReactivatingEllipsis")}
+        pending={suspensionPending}
+      />
     </div>
   );
 }

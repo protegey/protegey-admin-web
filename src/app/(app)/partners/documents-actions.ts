@@ -65,6 +65,31 @@ export async function decidePartner(
   return { success: true };
 }
 
+export async function suspendPartner(partnerId: string, reason: string): Promise<ActionResult> {
+  const lang = await getLang();
+  try {
+    await apiFetch(`/partners/${partnerId}/suspend`, {
+      method: "PATCH",
+      body: { reason },
+    });
+  } catch (error) {
+    return { error: error instanceof ApiError ? error.message : t(lang, "somethingWentWrongMessage") };
+  }
+  revalidatePath(`/partners/${partnerId}`);
+  return { success: true };
+}
+
+export async function reactivatePartner(partnerId: string): Promise<ActionResult> {
+  const lang = await getLang();
+  try {
+    await apiFetch(`/partners/${partnerId}/reactivate`, { method: "PATCH" });
+  } catch (error) {
+    return { error: error instanceof ApiError ? error.message : t(lang, "somethingWentWrongMessage") };
+  }
+  revalidatePath(`/partners/${partnerId}`);
+  return { success: true };
+}
+
 /** Switches the identity-verification provider used for this partner's KYC flow (Didit ⇄ FaceTec). */
 export async function updatePartnerKycProvider(
   partnerId: string,

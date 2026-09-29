@@ -6,6 +6,7 @@ import { getLang } from "@/lib/i18n/lang";
 import { t } from "@/lib/i18n/strings";
 import { getPartnerDocuments, type PartnerDocument } from "../documents-actions";
 import { getPartnerTeam, getPartnerPendingInvitations, getAssignablePartnerRoles } from "../team-actions";
+import { getPartnerContract, getPartnerBillingHistory } from "./contract-actions";
 import { PartnerDetailClient } from "./PartnerDetailClient";
 
 export const metadata: Metadata = {
@@ -25,6 +26,8 @@ interface Partner {
   country: string | null;
   description: string | null;
   rejectionReason: string | null;
+  suspendedAt: string | null;
+  suspensionReason: string | null;
   createdAt: string;
   activatedAt: string | null;
   kycProvider: "didit" | "facetec";
@@ -32,12 +35,14 @@ interface Partner {
 
 export default async function PartnerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [partner, documents, team, invitations, roles, lang] = await Promise.all([
+  const [partner, documents, team, invitations, roles, contract, billingHistory, lang] = await Promise.all([
     apiFetch<Partner>(`/partners/${id}`),
     getPartnerDocuments(id) as Promise<PartnerDocument[]>,
     getPartnerTeam(id),
     getPartnerPendingInvitations(id),
-    getAssignablePartnerRoles(),
+    getAssignablePartnerRoles(id),
+    getPartnerContract(id),
+    getPartnerBillingHistory(id),
     getLang(),
   ]);
 
@@ -50,7 +55,15 @@ export default async function PartnerDetailPage({ params }: { params: Promise<{ 
         <ArrowLeft className="size-3.5" />
         {t(lang, "partnersBackToPartners")}
       </Link>
-      <PartnerDetailClient partner={partner} documents={documents} team={team} invitations={invitations} roles={roles} />
+      <PartnerDetailClient
+        partner={partner}
+        documents={documents}
+        team={team}
+        invitations={invitations}
+        roles={roles}
+        contract={contract}
+        billingHistory={billingHistory}
+      />
     </div>
   );
 }
