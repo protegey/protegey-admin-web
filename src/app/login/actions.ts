@@ -40,5 +40,5 @@ export async function loginAction(_prevState: LoginState, formData: FormData): P
   }
 
   await setSessionCookies(response.accessToken, response.refreshToken, response.user);
-  redirect("/admins");
+  redirect("/dashboard");
 }

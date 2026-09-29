@@ -7,9 +7,11 @@ import type { StringKey } from "@/lib/i18n/strings";
 import {
   upsertPartnerContract,
   getPartnerBillingHistory,
+  getPartnerContractUsage,
   type ContractDiscountType,
   type PartnerContract,
   type BillingAuditEvent,
+  type ContractCycleUsage,
 } from "./contract-actions";
 
 const inputClass =
@@ -54,14 +56,17 @@ export function PartnerContractSection({
   partnerId,
   initialContract,
   initialHistory,
+  initialUsage,
 }: {
   partnerId: string;
   initialContract: PartnerContract | null;
   initialHistory: BillingAuditEvent[];
+  initialUsage: ContractCycleUsage | null;
 }) {
   const { t, lang } = useLang();
   const [form, setForm] = useState<FormState>(toFormState(initialContract));
   const [history, setHistory] = useState(initialHistory);
+  const [usage, setUsage] = useState(initialUsage);
   const [hasContract, setHasContract] = useState(initialContract !== null);
   const [pending, setPending] = useState(false);
   const locale = lang === "fr" ? "fr-FR" : "en-US";
@@ -90,8 +95,10 @@ export function PartnerContractSection({
     }
     toast.success(t("billingContractSavedToast"));
     setHasContract(true);
-    // Refresh the change history inline so an admin sees the new entries without a full reload.
-    setHistory(await getPartnerBillingHistory(partnerId));
+    // Refresh the change history and usage inline so an admin sees the new entries without a full reload.
+    const [nextHistory, nextUsage] = await Promise.all([getPartnerBillingHistory(partnerId), getPartnerContractUsage(partnerId)]);
+    setHistory(nextHistory);
+    setUsage(nextUsage);
   }
 
   function describeHistoryEntry(event: BillingAuditEvent): string {
@@ -112,6 +119,48 @@ export function PartnerContractSection({
       <p className="mt-1 text-xs text-muted-foreground">{t("billingContractHint")}</p>
 
       {!hasContract ? <p className="mt-3 text-xs font-medium text-muted-foreground">{t("billingContractEmptyState")}</p> : null}
+
+      <div className="mt-4 rounded-md border border-border bg-background p-4">
+        <p className="text-sm font-semibold text-foreground">{t("billingUsageTitle")}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">{t("billingUsageHint")}</p>
+
+        {usage ? (
+          <div className="mt-3 flex flex-col gap-3">
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <p className="text-xs text-muted-foreground">{t("billingUsageIncludedLabel")}</p>
+                <p className="text-lg font-semibold tabular-nums text-foreground">
+                  {Number(usage.includedTransactions).toLocaleString(locale)}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">{t("billingUsageConsumedLabel")}</p>
+                <p className="text-lg font-semibold tabular-nums text-foreground">{usage.consumedTransactions.toLocaleString(locale)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">{t("billingUsageOverageLabel")}</p>
+                <p className={`text-lg font-semibold tabular-nums ${usage.overageTransactions > 0 ? "text-destructive" : "text-foreground"}`}>
+                  {usage.overageTransactions.toLocaleString(locale)}
+                </p>
+              </div>
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className={`h-full rounded-full ${usage.percentUsed >= 100 ? "bg-destructive" : usage.percentUsed >= 80 ? "bg-amber-500" : "bg-primary"}`}
+                style={{ width: `${Math.min(100, usage.percentUsed)}%` }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {usage.percentUsed}% · {t("billingUsageCyclePeriodBefore")}
+              {new Date(usage.cycleStart).toLocaleDateString(locale)}
+              {t("billingUsageCyclePeriodJoiner")}
+              {new Date(usage.cycleEnd).toLocaleDateString(locale)}
+            </p>
+          </div>
+        ) : (
+          <p className="mt-3 text-xs text-muted-foreground">{t("billingUsageEmptyState")}</p>
+        )}
+      </div>
 
       <form onSubmit={handleSubmit} className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <label className="flex flex-col gap-1">

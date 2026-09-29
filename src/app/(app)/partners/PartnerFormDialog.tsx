@@ -225,16 +225,6 @@ export function PartnerFormDialog({
                     </option>
                   ))}
                 </select>
-                <select name="plan" required defaultValue="" className={inputClass}>
-                  <option value="" disabled>
-                    {t("partnersPlanWord")}
-                  </option>
-                  {PARTNER_PLANS.map((plan) => (
-                    <option key={plan.value} value={plan.value}>
-                      {plan.label}
-                    </option>
-                  ))}
-                </select>
                 <CountrySelect name="country" onChange={handleCountryChange} />
                 <input
                   name="description"

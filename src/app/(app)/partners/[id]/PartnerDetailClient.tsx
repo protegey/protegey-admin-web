@@ -15,14 +15,13 @@ import {
   getPartnerDocuments,
   reactivatePartner,
   suspendPartner,
-  updatePartnerKycProvider,
   type PartnerDocument,
 } from "../documents-actions";
 import type { TeamMember, PendingInvitation, AssignableRole, PaginatedResult } from "../team-actions";
 import { DocumentReviewRow } from "./DocumentReviewRow";
 import { PartnerTeamSection } from "./PartnerTeamSection";
 import { PartnerContractSection } from "./PartnerContractSection";
-import type { PartnerContract, BillingAuditEvent } from "./contract-actions";
+import type { PartnerContract, BillingAuditEvent, ContractCycleUsage } from "./contract-actions";
 
 interface Partner {
   id: string;
@@ -41,7 +40,6 @@ interface Partner {
   suspensionReason: string | null;
   createdAt: string;
   activatedAt: string | null;
-  kycProvider: "didit" | "facetec";
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -94,6 +92,7 @@ export function PartnerDetailClient({
   roles,
   contract,
   billingHistory,
+  usage,
 }: {
   partner: Partner;
   documents: PartnerDocument[];
@@ -102,6 +101,7 @@ export function PartnerDetailClient({
   roles: AssignableRole[];
   contract: PartnerContract | null;
   billingHistory: BillingAuditEvent[];
+  usage: ContractCycleUsage | null;
 }) {
   const { t } = useLang();
   const router = useRouter();
@@ -111,7 +111,6 @@ export function PartnerDetailClient({
   const [decisionReason, setDecisionReason] = useState("");
   const [confirmDecision, setConfirmDecision] = useState<"approve" | "reject" | null>(null);
   const [decisionPending, setDecisionPending] = useState(false);
-  const [kycProviderPending, setKycProviderPending] = useState(false);
   const [suspendReason, setSuspendReason] = useState("");
   const [confirmSuspension, setConfirmSuspension] = useState<"suspend" | "reactivate" | null>(null);
   const [suspensionPending, setSuspensionPending] = useState(false);
@@ -199,19 +198,6 @@ export function PartnerDetailClient({
       toast.success(t("partnersReactivatedToast"));
       closeSuspensionConfirm();
       router.refresh();
-    }
-  }
-
-  async function handleKycProviderChange(next: "didit" | "facetec") {
-    if (next === partner.kycProvider || kycProviderPending) return;
-    setKycProviderPending(true);
-    const result = await updatePartnerKycProvider(partner.id, next);
-    setKycProviderPending(false);
-    if (result.error) {
-      toast.error(result.error);
-    } else {
-      setPartner((prev) => ({ ...prev, kycProvider: next }));
-      toast.success(t("partnersKycProviderUpdatedToast"));
     }
   }
 
@@ -320,39 +306,6 @@ export function PartnerDetailClient({
         <InfoField label={t("partnersDescriptionLabel")} value={partner.description} />
       </div>
 
-      <div className="flex items-center justify-between gap-4 rounded-md border border-border bg-card p-5">
-        <div>
-          <p className="text-sm font-semibold text-foreground">{t("partnersKycProviderLabel")}</p>
-          <p className="mt-0.5 text-xs text-muted-foreground">{t("partnersKycProviderHint")}</p>
-        </div>
-        <div className="inline-flex shrink-0 rounded-md border border-border bg-muted p-1">
-          <button
-            type="button"
-            disabled={kycProviderPending}
-            onClick={() => handleKycProviderChange("didit")}
-            className={`rounded px-3 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
-              partner.kycProvider === "didit"
-                ? "bg-card text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {t("partnersKycProviderDidit")}
-          </button>
-          <button
-            type="button"
-            disabled={kycProviderPending}
-            onClick={() => handleKycProviderChange("facetec")}
-            className={`rounded px-3 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
-              partner.kycProvider === "facetec"
-                ? "bg-card text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {t("partnersKycProviderFacetec")}
-          </button>
-        </div>
-      </div>
-
       <div className="rounded-md border border-border bg-card p-5">
         <p className="mb-3 text-sm font-semibold text-foreground">{t("partnersKybDocumentsTitle")}</p>
         <div className="flex flex-col gap-3">
@@ -389,7 +342,7 @@ export function PartnerDetailClient({
         ) : null}
       </div>
 
-      <PartnerContractSection partnerId={partner.id} initialContract={contract} initialHistory={billingHistory} />
+      <PartnerContractSection partnerId={partner.id} initialContract={contract} initialHistory={billingHistory} initialUsage={usage} />
 
       <PartnerTeamSection partnerId={partner.id} initialMembers={team} initialInvitations={invitations} roles={roles} />
 

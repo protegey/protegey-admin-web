@@ -50,5 +50,5 @@ export async function acceptInvitationAction(
   }
 
   await setSessionCookies(response.accessToken, response.refreshToken, response.user);
-  redirect("/admins");
+  redirect("/dashboard");
 }

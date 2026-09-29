@@ -6,7 +6,7 @@ import { getLang } from "@/lib/i18n/lang";
 import { t } from "@/lib/i18n/strings";
 import { getPartnerDocuments, type PartnerDocument } from "../documents-actions";
 import { getPartnerTeam, getPartnerPendingInvitations, getAssignablePartnerRoles } from "../team-actions";
-import { getPartnerContract, getPartnerBillingHistory } from "./contract-actions";
+import { getPartnerContract, getPartnerBillingHistory, getPartnerContractUsage } from "./contract-actions";
 import { PartnerDetailClient } from "./PartnerDetailClient";
 
 export const metadata: Metadata = {
@@ -30,12 +30,11 @@ interface Partner {
   suspensionReason: string | null;
   createdAt: string;
   activatedAt: string | null;
-  kycProvider: "didit" | "facetec";
 }
 
 export default async function PartnerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [partner, documents, team, invitations, roles, contract, billingHistory, lang] = await Promise.all([
+  const [partner, documents, team, invitations, roles, contract, billingHistory, usage, lang] = await Promise.all([
     apiFetch<Partner>(`/partners/${id}`),
     getPartnerDocuments(id) as Promise<PartnerDocument[]>,
     getPartnerTeam(id),
@@ -43,6 +42,7 @@ export default async function PartnerDetailPage({ params }: { params: Promise<{ 
     getAssignablePartnerRoles(id),
     getPartnerContract(id),
     getPartnerBillingHistory(id),
+    getPartnerContractUsage(id),
     getLang(),
   ]);
 
@@ -63,6 +63,7 @@ export default async function PartnerDetailPage({ params }: { params: Promise<{ 
         roles={roles}
         contract={contract}
         billingHistory={billingHistory}
+        usage={usage}
       />
     </div>
   );

@@ -51,6 +51,19 @@ export async function upsertPartnerContract(partnerId: string, input: UpsertCont
   return { success: true };
 }
 
+export interface ContractCycleUsage {
+  cycleStart: string;
+  cycleEnd: string;
+  includedTransactions: string;
+  consumedTransactions: number;
+  overageTransactions: number;
+  percentUsed: number;
+}
+
+export async function getPartnerContractUsage(partnerId: string): Promise<ContractCycleUsage | null> {
+  return apiFetch<ContractCycleUsage | null>(`/partners/${partnerId}/contract/usage`);
+}
+
 export interface BillingAuditEvent {
   id: string;
   actorLabel: string | null;

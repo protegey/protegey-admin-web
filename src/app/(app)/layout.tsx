@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Gauge, Handshake, ShieldAlert, ShieldCheck, Users } from "lucide-react";
+import { Gauge, Handshake, ShieldAlert, ShieldCheck, Users, Settings as SettingsIcon, LayoutDashboard } from "lucide-react";
 import { Sidebar, type NavItem } from "@/components/Sidebar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LangToggle } from "@/components/LangToggle";
@@ -13,6 +13,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const [user, lang] = await Promise.all([getSessionUser(), getLang()]);
 
   const navItems: NavItem[] = [
+    {
+      href: "/dashboard",
+      label: t(lang, "navDashboard"),
+      icon: <LayoutDashboard className="size-4" />,
+    },
     {
       label: t(lang, "navPartners"),
       icon: <Handshake className="size-4" />,
@@ -42,6 +47,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       href: "/risk-profile",
       label: t(lang, "navRiskProfiles"),
       icon: <Gauge className="size-4" />,
+    },
+    {
+      href: "/settings",
+      label: t(lang, "navSettings"),
+      icon: <SettingsIcon className="size-4" />,
     },
   ];
 

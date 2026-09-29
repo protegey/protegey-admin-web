@@ -89,21 +89,3 @@ export async function reactivatePartner(partnerId: string): Promise<ActionResult
   revalidatePath(`/partners/${partnerId}`);
   return { success: true };
 }
-
-/** Switches the identity-verification provider used for this partner's KYC flow (Didit ⇄ FaceTec). */
-export async function updatePartnerKycProvider(
-  partnerId: string,
-  kycProvider: "didit" | "facetec",
-): Promise<ActionResult> {
-  const lang = await getLang();
-  try {
-    await apiFetch(`/partners/${partnerId}`, {
-      method: "PATCH",
-      body: { kycProvider },
-    });
-  } catch (error) {
-    return { error: error instanceof ApiError ? error.message : t(lang, "somethingWentWrongMessage") };
-  }
-  revalidatePath(`/partners/${partnerId}`);
-  return { success: true };
-}

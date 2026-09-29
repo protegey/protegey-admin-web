@@ -24,6 +24,7 @@ const STRINGS = {
     fr: "Les mots de passe ne correspondent pas.",
   },
 
+  navDashboard: { en: "Dashboard", fr: "Tableau de bord" },
   navPartners: { en: "Partners", fr: "Partenaires" },
   navPartnersList: { en: "Partners", fr: "Partenaires" },
   navPartnerVerification: { en: "Partner Verification", fr: "Vérification des partenaires" },
@@ -35,6 +36,7 @@ const STRINGS = {
   navAmlReviews: { en: "AML Reviews", fr: "Revues LBC" },
   navAdministrators: { en: "Administrators", fr: "Administrateurs" },
   navRiskProfiles: { en: "Risk Profiles", fr: "Profils de risque" },
+  navSettings: { en: "Settings", fr: "Paramètres" },
   navScreeningMatches: { en: "Screening Matches", fr: "Correspondances de filtrage" },
 
   // ---- Shared atoms (reused across pages/dialogs) ----
@@ -223,14 +225,6 @@ const STRINGS = {
   partnersCreatedLabel: { en: "Created", fr: "Créé le" },
   partnersActivatedLabel: { en: "Activated", fr: "Activé le" },
   partnersDescriptionLabel: { en: "Description", fr: "Description" },
-  partnersKycProviderLabel: { en: "KYC provider", fr: "Fournisseur KYC" },
-  partnersKycProviderHint: {
-    en: "Identity-verification provider used for this partner's KYC flow.",
-    fr: "Fournisseur de vérification d'identité utilisé pour le parcours KYC de ce partenaire.",
-  },
-  partnersKycProviderDidit: { en: "Didit", fr: "Didit" },
-  partnersKycProviderFacetec: { en: "FaceTec", fr: "FaceTec" },
-  partnersKycProviderUpdatedToast: { en: "KYC provider updated.", fr: "Fournisseur KYC mis à jour." },
   partnersKybDocumentsTitle: { en: "KYB documents", fr: "Documents KYB" },
   billingContractTitle: { en: "Billing contract", fr: "Contrat de facturation" },
   billingContractHint: {
@@ -255,6 +249,20 @@ const STRINGS = {
   billingContractCreateButton: { en: "Create contract", fr: "Créer le contrat" },
   billingContractSavingEllipsis: { en: "Saving…", fr: "Enregistrement…" },
   billingContractSavedToast: { en: "Billing contract saved.", fr: "Contrat de facturation enregistré." },
+  billingUsageTitle: { en: "Current cycle usage", fr: "Consommation du cycle en cours" },
+  billingUsageHint: {
+    en: "Anchored to this partner's own creation date, not a calendar month.",
+    fr: "Calé sur la date de création de ce partenaire, pas sur un mois calendaire.",
+  },
+  billingUsageIncludedLabel: { en: "Included", fr: "Inclus" },
+  billingUsageConsumedLabel: { en: "Consumed", fr: "Consommé" },
+  billingUsageOverageLabel: { en: "Overage", fr: "Dépassement" },
+  billingUsageCyclePeriodBefore: { en: "Cycle: ", fr: "Cycle : " },
+  billingUsageCyclePeriodJoiner: { en: " to ", fr: " au " },
+  billingUsageEmptyState: {
+    en: "Save a contract to see this partner's consumption.",
+    fr: "Enregistrez un contrat pour voir la consommation de ce partenaire.",
+  },
   billingHistoryTitle: { en: "Recent changes", fr: "Modifications récentes" },
   billingHistoryEmptyState: { en: "No changes recorded yet.", fr: "Aucune modification enregistrée." },
   billingHistoryCreatedEntry: { en: "configured the contract", fr: "a configuré le contrat" },
@@ -781,6 +789,50 @@ const STRINGS = {
   countrySelectClearAria: { en: "Clear country", fr: "Effacer le pays" },
   countrySelectClearSearchAria: { en: "Clear search", fr: "Effacer la recherche" },
   countrySelectNoMatchBefore: { en: "No country matches", fr: "Aucun pays ne correspond à" },
+
+  settingsPageTitle: { en: "Platform settings", fr: "Paramètres de la plateforme" },
+  settingsPageSubtitle: {
+    en: "Global configuration that applies to every partner at once, not one partner at a time.",
+    fr: "Configuration globale qui s'applique à tous les partenaires à la fois, et non partenaire par partenaire.",
+  },
+  settingsKycProviderTitle: { en: "KYC provider", fr: "Fournisseur KYC" },
+  settingsKycProviderHint: {
+    en: "Identity-verification provider used for every partner's KYC flow across the platform (demo/sandbox today).",
+    fr: "Fournisseur de vérification d'identité utilisé pour le parcours KYC de tous les partenaires sur la plateforme (démo/bac à sable aujourd'hui).",
+  },
+  settingsKycProviderDidit: { en: "Didit", fr: "Didit" },
+  settingsKycProviderFacetec: { en: "FaceTec", fr: "FaceTec" },
+  settingsKycProviderUpdatedToast: { en: "KYC provider updated for all partners.", fr: "Fournisseur KYC mis à jour pour tous les partenaires." },
+  settingsTimersTitle: { en: "Timers & intervals", fr: "Délais et intervalles" },
+  settingsTimersHint: {
+    en: "How long links stay valid and how often KYB submissions are re-screened — platform-wide.",
+    fr: "Durée de validité des liens et fréquence de re-vérification des dossiers KYB — pour toute la plateforme.",
+  },
+  settingsClientInvitationTtlLabel: { en: "Client (KYB) invitation link", fr: "Lien d'invitation client (KYB)" },
+  settingsPartnerInvitationTtlLabel: { en: "Partner & admin invitation link", fr: "Lien d'invitation partenaire & administrateur" },
+  settingsPasswordResetTtlLabel: { en: "Password reset link", fr: "Lien de réinitialisation du mot de passe" },
+  settingsRescreeningIntervalLabel: { en: "KYB re-screening interval", fr: "Intervalle de re-vérification KYB" },
+  settingsHoursSuffix: { en: "hours", fr: "heures" },
+  settingsDaysSuffix: { en: "days", fr: "jours" },
+  settingsSaveButton: { en: "Save", fr: "Enregistrer" },
+  settingsSavingEllipsis: { en: "Saving…", fr: "Enregistrement…" },
+  settingsNumericSettingUpdatedToast: { en: "Setting updated.", fr: "Paramètre mis à jour." },
+
+  dashboardPageTitle: { en: "Dashboard", fr: "Tableau de bord" },
+  dashboardPageSubtitle: { en: "An overview of every partner on the platform.", fr: "Une vue d'ensemble de tous les partenaires de la plateforme." },
+  dashboardTotalPartnersLabel: { en: "Total partners", fr: "Total partenaires" },
+  dashboardActiveLabel: { en: "Active", fr: "Actifs" },
+  dashboardPendingKybLabel: { en: "Pending KYB review", fr: "En attente de revue KYB" },
+  dashboardSuspendedLabel: { en: "Suspended", fr: "Suspendus" },
+  dashboardNoContractLabel: { en: "Active, no contract", fr: "Actifs, sans contrat" },
+  dashboardNoContractHint: {
+    en: "These active partners can't do anything yet — configure their billing contract to unblock them.",
+    fr: "Ces partenaires actifs ne peuvent rien faire pour l'instant — configurez leur contrat de facturation pour les débloquer.",
+  },
+  dashboardRecentPartnersTitle: { en: "Recently created", fr: "Créés récemment" },
+  dashboardRecentActivityTitle: { en: "Recent activity", fr: "Activité récente" },
+  dashboardViewAllLink: { en: "View all partners", fr: "Voir tous les partenaires" },
+  dashboardReviewLink: { en: "Review", fr: "Examiner" },
 } as const;
 
 export type StringKey = keyof typeof STRINGS;
