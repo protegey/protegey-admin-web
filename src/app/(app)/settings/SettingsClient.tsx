@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { useLang } from "@/lib/i18n/LangProvider";
+import { CurrencySelect } from "@/components/CurrencySelect";
 import type { StringKey } from "@/lib/i18n/strings";
 import {
   updateKycProvider,
@@ -136,13 +137,57 @@ function DefaultContractTemplateForm({
 
       <label className="flex flex-col gap-1">
         <span className="text-xs font-medium text-muted-foreground">{t("billingFieldCurrency")}</span>
+        <CurrencySelect className={contractInputClass} value={form.currency} onChange={(code) => update("currency", code)} />
+      </label>
+
+      <div className="sm:col-span-2 lg:col-span-3">
+        <p className="mb-1 mt-2 text-xs font-semibold text-foreground">{t("settingsDefaultContractBankSectionTitle")}</p>
+        <p className="mb-3 text-xs text-muted-foreground">{t("settingsDefaultContractBankSectionHint")}</p>
+      </div>
+
+      <label className="flex flex-col gap-1 sm:col-span-2 lg:col-span-3">
+        <span className="text-xs font-medium text-muted-foreground">{t("invoicePaymentFieldMethod")}</span>
+        <input className={contractInputClass} required value={form.bankPaymentMethod} onChange={(e) => update("bankPaymentMethod", e.target.value)} />
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className="text-xs font-medium text-muted-foreground">{t("invoicePaymentFieldRoutingNumber")}</span>
+        <input className={contractInputClass} required value={form.bankRoutingNumber} onChange={(e) => update("bankRoutingNumber", e.target.value)} />
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className="text-xs font-medium text-muted-foreground">{t("invoicePaymentFieldAccountNumber")}</span>
+        <input className={contractInputClass} required value={form.bankAccountNumber} onChange={(e) => update("bankAccountNumber", e.target.value)} />
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className="text-xs font-medium text-muted-foreground">{t("invoicePaymentFieldAccountType")}</span>
+        <input className={contractInputClass} required value={form.bankAccountType} onChange={(e) => update("bankAccountType", e.target.value)} />
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className="text-xs font-medium text-muted-foreground">{t("invoicePaymentFieldBeneficiaryName")}</span>
+        <input className={contractInputClass} required value={form.bankBeneficiaryName} onChange={(e) => update("bankBeneficiaryName", e.target.value)} />
+      </label>
+
+      <label className="flex flex-col gap-1 sm:col-span-2">
+        <span className="text-xs font-medium text-muted-foreground">{t("invoicePaymentFieldBeneficiaryAddress")}</span>
         <input
           className={contractInputClass}
-          maxLength={3}
           required
-          value={form.currency}
-          onChange={(e) => update("currency", e.target.value.toUpperCase())}
+          value={form.bankBeneficiaryAddress}
+          onChange={(e) => update("bankBeneficiaryAddress", e.target.value)}
         />
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className="text-xs font-medium text-muted-foreground">{t("invoicePaymentFieldBankName")}</span>
+        <input className={contractInputClass} required value={form.bankName} onChange={(e) => update("bankName", e.target.value)} />
+      </label>
+
+      <label className="flex flex-col gap-1 sm:col-span-2">
+        <span className="text-xs font-medium text-muted-foreground">{t("invoicePaymentFieldBankAddress")}</span>
+        <input className={contractInputClass} required value={form.bankAddress} onChange={(e) => update("bankAddress", e.target.value)} />
       </label>
 
       <div className="flex items-end sm:col-span-2 lg:col-span-3">

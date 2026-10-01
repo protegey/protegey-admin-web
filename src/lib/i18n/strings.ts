@@ -231,6 +231,10 @@ const STRINGS = {
     en: "PROTEGEY bills strictly by transaction volume — KYC, KYB and screening are included in this price. Two partners on the same volume pay the same standard price; a negotiated discount is tracked separately so it always shows on the invoice.",
     fr: "PROTEGEY facture strictement au volume de transactions — le KYC, le KYB et le screening sont inclus dans ce prix. Deux partenaires sur le même volume paient le même prix standard ; une remise négociée est enregistrée séparément pour toujours apparaître sur la facture.",
   },
+  billingContractBankSectionHint: {
+    en: "Which PROTEGEY bank account this partner pays into — starts from the global default (Settings) but can be overridden here, e.g. for a partner paying into a local PROTEGEY account instead.",
+    fr: "Le compte bancaire PROTEGEY sur lequel ce partenaire paie — reprend par défaut la valeur globale (Réglages), mais peut être modifié ici, par exemple si ce partenaire paie sur un compte PROTEGEY local.",
+  },
   billingContractEmptyState: {
     en: "No billing contract configured yet for this partner.",
     fr: "Aucun contrat de facturation configuré pour ce partenaire.",
@@ -825,6 +829,20 @@ const STRINGS = {
   settingsDefaultContractSaveButton: { en: "Save defaults", fr: "Enregistrer les valeurs par défaut" },
   settingsDefaultContractSavingEllipsis: { en: "Saving…", fr: "Enregistrement…" },
   settingsDefaultContractSavedToast: { en: "Default contract template updated.", fr: "Modèle de contrat par défaut mis à jour." },
+
+  settingsDefaultContractBankSectionTitle: { en: "Default payment details", fr: "Coordonnées de paiement par défaut" },
+  settingsDefaultContractBankSectionHint: {
+    en: "Which PROTEGEY bank account a brand-new contract starts with — editable per partner afterward on their own contract page (useful when a partner pays into a different, local PROTEGEY account).",
+    fr: "Le compte bancaire PROTEGEY utilisé par défaut pour un nouveau contrat — modifiable ensuite pour chaque partenaire sur sa propre page de contrat (utile quand un partenaire paie sur un compte PROTEGEY local différent).",
+  },
+  invoicePaymentFieldMethod: { en: "Payment method label", fr: "Libellé du moyen de paiement" },
+  invoicePaymentFieldRoutingNumber: { en: "Routing / ABA number", fr: "Numéro de routage (ABA)" },
+  invoicePaymentFieldAccountNumber: { en: "Account number", fr: "Numéro de compte" },
+  invoicePaymentFieldAccountType: { en: "Account type", fr: "Type de compte" },
+  invoicePaymentFieldBeneficiaryName: { en: "Beneficiary name", fr: "Nom du bénéficiaire" },
+  invoicePaymentFieldBeneficiaryAddress: { en: "Beneficiary address", fr: "Adresse du bénéficiaire" },
+  invoicePaymentFieldBankName: { en: "Bank name", fr: "Nom de la banque" },
+  invoicePaymentFieldBankAddress: { en: "Bank address", fr: "Adresse de la banque" },
 
   dashboardPageTitle: { en: "Dashboard", fr: "Tableau de bord" },
   dashboardPageSubtitle: { en: "An overview of every partner on the platform.", fr: "Une vue d'ensemble de tous les partenaires de la plateforme." },

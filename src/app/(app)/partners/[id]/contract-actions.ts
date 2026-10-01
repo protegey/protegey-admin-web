@@ -6,7 +6,20 @@ import { t } from "@/lib/i18n/strings";
 
 export type ContractDiscountType = "percent" | "fixed";
 
-export interface PartnerContract {
+/** Which PROTEGEY bank account this contract's partner pays into — a locally-invoiced partner may
+ * need a different, local PROTEGEY account than the US Brex account most partners use. */
+export interface ContractBankFields {
+  bankPaymentMethod: string;
+  bankRoutingNumber: string;
+  bankAccountNumber: string;
+  bankAccountType: string;
+  bankBeneficiaryName: string;
+  bankBeneficiaryAddress: string;
+  bankName: string;
+  bankAddress: string;
+}
+
+export interface PartnerContract extends ContractBankFields {
   id: string;
   partnerId: string;
   standardMonthlyFee: string;
@@ -21,7 +34,7 @@ export interface PartnerContract {
   updatedAt: string;
 }
 
-export interface UpsertContractInput {
+export interface UpsertContractInput extends ContractBankFields {
   standardMonthlyFee: string;
   discountType: ContractDiscountType;
   discountValue: string;
@@ -41,7 +54,7 @@ export async function getPartnerContract(partnerId: string): Promise<PartnerCont
   return apiFetch<PartnerContract | null>(`/partners/${partnerId}/contract`);
 }
 
-export interface DefaultContractTemplate {
+export interface DefaultContractTemplate extends ContractBankFields {
   standardMonthlyFee: string;
   discountType: ContractDiscountType;
   discountValue: string;

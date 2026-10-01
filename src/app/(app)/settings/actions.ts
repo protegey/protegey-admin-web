@@ -23,6 +23,17 @@ export interface DefaultContractTemplate {
   paymentTermsDays: number;
   taxRate: string;
   currency: string;
+  /** Which PROTEGEY bank account a brand-new contract pre-fills with — editable per partner
+   * afterward on that partner's own contract (a locally-invoiced partner may pay into a
+   * different, local PROTEGEY account than this global default). */
+  bankPaymentMethod: string;
+  bankRoutingNumber: string;
+  bankAccountNumber: string;
+  bankAccountType: string;
+  bankBeneficiaryName: string;
+  bankBeneficiaryAddress: string;
+  bankName: string;
+  bankAddress: string;
 }
 
 export interface PlatformSettings {
