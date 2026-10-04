@@ -10,6 +10,10 @@ export const metadata: Metadata = {
   title: "Partners — Protegey Admin",
 };
 
+/** See PaymentHealth on the backend (billing/utils/payment-health.util.ts) — derived from the
+ * partner's latest invoice on every request, never stored. */
+export type PaymentHealth = "no_invoice" | "current" | "pending" | "overdue";
+
 interface Partner {
   id: string;
   name: string;
@@ -21,6 +25,7 @@ interface Partner {
   country: string | null;
   description: string | null;
   createdAt: string;
+  paymentHealth: PaymentHealth;
 }
 
 interface PaginatedPartners {

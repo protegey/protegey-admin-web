@@ -11,6 +11,8 @@ export const metadata: Metadata = {
   title: "Partner Verification — Protegey Admin",
 };
 
+type PaymentHealth = "no_invoice" | "current" | "pending" | "overdue";
+
 interface Partner {
   id: string;
   name: string;
@@ -22,6 +24,7 @@ interface Partner {
   country: string | null;
   description: string | null;
   createdAt: string;
+  paymentHealth: PaymentHealth;
 }
 
 interface PaginatedPartners {

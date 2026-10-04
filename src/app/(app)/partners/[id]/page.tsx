@@ -7,7 +7,10 @@ import { t } from "@/lib/i18n/strings";
 import { getPartnerDocuments, type PartnerDocument } from "../documents-actions";
 import { getPartnerTeam, getPartnerPendingInvitations, getAssignablePartnerRoles } from "../team-actions";
 import { getPartnerContract, getPartnerBillingHistory, getPartnerContractUsage, getDefaultContractTemplate } from "./contract-actions";
+import { getPartnerInvoices } from "./invoice-actions";
 import { PartnerDetailClient } from "./PartnerDetailClient";
+
+type PaymentHealth = "no_invoice" | "current" | "pending" | "overdue";
 
 export const metadata: Metadata = {
   title: "Partner details — Protegey Admin",
@@ -30,11 +33,12 @@ interface Partner {
   suspensionReason: string | null;
   createdAt: string;
   activatedAt: string | null;
+  paymentHealth: PaymentHealth;
 }
 
 export default async function PartnerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [partner, documents, team, invitations, roles, contract, billingHistory, usage, defaultContractTemplate, lang] = await Promise.all([
+  const [partner, documents, team, invitations, roles, contract, billingHistory, usage, defaultContractTemplate, invoices, lang] = await Promise.all([
     apiFetch<Partner>(`/partners/${id}`),
     getPartnerDocuments(id) as Promise<PartnerDocument[]>,
     getPartnerTeam(id),
@@ -44,6 +48,7 @@ export default async function PartnerDetailPage({ params }: { params: Promise<{ 
     getPartnerBillingHistory(id),
     getPartnerContractUsage(id),
     getDefaultContractTemplate(),
+    getPartnerInvoices(id),
     getLang(),
   ]);
 
@@ -66,6 +71,7 @@ export default async function PartnerDetailPage({ params }: { params: Promise<{ 
         billingHistory={billingHistory}
         usage={usage}
         defaultContractTemplate={defaultContractTemplate}
+        invoices={invoices}
       />
     </div>
   );

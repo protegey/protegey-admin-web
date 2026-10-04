@@ -10,6 +10,8 @@ import type { AssignableRole } from "./actions";
 import { useLang } from "@/lib/i18n/LangProvider";
 import type { StringKey } from "@/lib/i18n/strings";
 
+type PaymentHealth = "no_invoice" | "current" | "pending" | "overdue";
+
 interface Partner {
   id: string;
   name: string;
@@ -21,7 +23,22 @@ interface Partner {
   country: string | null;
   description: string | null;
   createdAt: string;
+  paymentHealth: PaymentHealth;
 }
+
+const PAYMENT_HEALTH_STYLES: Record<PaymentHealth, string> = {
+  no_invoice: "bg-muted text-muted-foreground",
+  current: "bg-primary/10 text-primary",
+  pending: "bg-amber-500/10 text-amber-600",
+  overdue: "bg-destructive/10 text-destructive",
+};
+
+const PAYMENT_HEALTH_LABEL_KEYS: Record<PaymentHealth, StringKey> = {
+  no_invoice: "paymentHealthNoInvoice",
+  current: "paymentHealthCurrent",
+  pending: "paymentHealthPending",
+  overdue: "paymentHealthOverdue",
+};
 
 const STATUS_STYLES: Record<string, string> = {
   active: "bg-primary/10 text-primary",
@@ -235,6 +252,7 @@ export function PartnersClient({
               <th className="px-4 py-2.5 font-medium">{t("partnersCountryColumn")}</th>
               <th className="px-4 py-2.5 font-medium">{t("partnersCreatedColumn")}</th>
               <th className="px-4 py-2.5 font-medium">{t("partnersStatusLabel")}</th>
+              <th className="px-4 py-2.5 font-medium">{t("partnersPaymentColumn")}</th>
               <th className="px-4 py-2.5 font-medium text-right">{t("partnersActionsColumn")}</th>
             </tr>
           </thead>
@@ -263,6 +281,11 @@ export function PartnersClient({
                     }`}
                   >
                     {statusLabel(partner.status)}
+                  </span>
+                </td>
+                <td className="px-4 py-2.5">
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${PAYMENT_HEALTH_STYLES[partner.paymentHealth]}`}>
+                    {t(PAYMENT_HEALTH_LABEL_KEYS[partner.paymentHealth])}
                   </span>
                 </td>
                 <td className="px-4 py-2.5">

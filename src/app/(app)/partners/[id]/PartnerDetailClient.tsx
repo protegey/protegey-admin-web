@@ -21,7 +21,11 @@ import type { TeamMember, PendingInvitation, AssignableRole, PaginatedResult } f
 import { DocumentReviewRow } from "./DocumentReviewRow";
 import { PartnerTeamSection } from "./PartnerTeamSection";
 import { PartnerContractSection } from "./PartnerContractSection";
+import { PartnerInvoicesSection } from "./PartnerInvoicesSection";
 import type { PartnerContract, BillingAuditEvent, ContractCycleUsage, DefaultContractTemplate } from "./contract-actions";
+import type { Invoice } from "./invoice-actions";
+
+type PaymentHealth = "no_invoice" | "current" | "pending" | "overdue";
 
 interface Partner {
   id: string;
@@ -40,7 +44,22 @@ interface Partner {
   suspensionReason: string | null;
   createdAt: string;
   activatedAt: string | null;
+  paymentHealth: PaymentHealth;
 }
+
+const PAYMENT_HEALTH_STYLES: Record<PaymentHealth, string> = {
+  no_invoice: "bg-muted text-muted-foreground",
+  current: "bg-primary/10 text-primary",
+  pending: "bg-amber-500/10 text-amber-600",
+  overdue: "bg-destructive/10 text-destructive",
+};
+
+const PAYMENT_HEALTH_LABEL_KEYS: Record<PaymentHealth, StringKey> = {
+  no_invoice: "paymentHealthNoInvoice",
+  current: "paymentHealthCurrent",
+  pending: "paymentHealthPending",
+  overdue: "paymentHealthOverdue",
+};
 
 const STATUS_STYLES: Record<string, string> = {
   active: "bg-primary/10 text-primary",
@@ -94,6 +113,7 @@ export function PartnerDetailClient({
   billingHistory,
   usage,
   defaultContractTemplate,
+  invoices,
 }: {
   partner: Partner;
   documents: PartnerDocument[];
@@ -104,6 +124,7 @@ export function PartnerDetailClient({
   billingHistory: BillingAuditEvent[];
   usage: ContractCycleUsage | null;
   defaultContractTemplate: DefaultContractTemplate;
+  invoices: Invoice[];
 }) {
   const { t } = useLang();
   const router = useRouter();
@@ -229,6 +250,9 @@ export function PartnerDetailClient({
               >
                 {STATUS_LABEL_KEYS[partner.status] ? t(STATUS_LABEL_KEYS[partner.status]) : formatLabel(partner.status)}
               </span>
+              <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${PAYMENT_HEALTH_STYLES[partner.paymentHealth]}`}>
+                {t(PAYMENT_HEALTH_LABEL_KEYS[partner.paymentHealth])}
+              </span>
             </div>
             <p className="text-sm text-muted-foreground">
               {TYPE_LABEL_KEYS[partner.type] ? t(TYPE_LABEL_KEYS[partner.type]) : formatLabel(partner.type)} ·{" "}
@@ -351,6 +375,8 @@ export function PartnerDetailClient({
         initialUsage={usage}
         defaultTemplate={defaultContractTemplate}
       />
+
+      <PartnerInvoicesSection partnerId={partner.id} initialInvoices={invoices} />
 
       <PartnerTeamSection partnerId={partner.id} initialMembers={team} initialInvitations={invitations} roles={roles} />
 
