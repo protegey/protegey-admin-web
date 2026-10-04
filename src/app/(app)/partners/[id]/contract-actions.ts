@@ -6,6 +6,9 @@ import { t } from "@/lib/i18n/strings";
 
 export type ContractDiscountType = "percent" | "fixed";
 
+/** See ContractBonusRecurrence on the backend entity for the full semantics of each value. */
+export type ContractBonusRecurrence = "none" | "once" | "monthly";
+
 /** Which PROTEGEY bank account this contract's partner pays into — a locally-invoiced partner may
  * need a different, local PROTEGEY account than the US Brex account most partners use. */
 export interface ContractBankFields {
@@ -26,6 +29,9 @@ export interface PartnerContract extends ContractBankFields {
   discountType: ContractDiscountType;
   discountValue: string;
   includedTransactions: string;
+  bonusTransactions: string;
+  bonusRecurrence: ContractBonusRecurrence;
+  bonusTransactionsRemaining: string | null;
   overageRate: string;
   paymentTermsDays: number;
   taxRate: string;
@@ -39,6 +45,8 @@ export interface UpsertContractInput extends ContractBankFields {
   discountType: ContractDiscountType;
   discountValue: string;
   includedTransactions: string;
+  bonusTransactions: string;
+  bonusRecurrence: ContractBonusRecurrence;
   overageRate: string;
   paymentTermsDays: number;
   taxRate: string;
@@ -88,6 +96,9 @@ export interface ContractCycleUsage {
   includedTransactions: string;
   consumedTransactions: number;
   overageTransactions: number;
+  bonusRecurrence: ContractBonusRecurrence;
+  bonusApplied: number;
+  effectiveOverageTransactions: number;
   percentUsed: number;
 }
 

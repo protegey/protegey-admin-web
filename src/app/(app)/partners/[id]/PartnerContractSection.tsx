@@ -7,9 +7,11 @@ import { CurrencySelect } from "@/components/CurrencySelect";
 import type { StringKey } from "@/lib/i18n/strings";
 import {
   upsertPartnerContract,
+  getPartnerContract,
   getPartnerBillingHistory,
   getPartnerContractUsage,
   type ContractDiscountType,
+  type ContractBonusRecurrence,
   type PartnerContract,
   type BillingAuditEvent,
   type ContractCycleUsage,
@@ -24,6 +26,8 @@ const BILLING_FIELD_LABEL_KEY: Record<string, StringKey> = {
   discountType: "billingFieldDiscountType",
   discountValue: "billingFieldDiscountValue",
   includedTransactions: "billingFieldIncludedTransactions",
+  bonusTransactions: "billingFieldBonusTransactions",
+  bonusRecurrence: "billingFieldBonusRecurrence",
   overageRate: "billingFieldOverageRate",
   paymentTermsDays: "billingFieldPaymentTermsDays",
   taxRate: "billingFieldTaxRate",
@@ -43,6 +47,8 @@ interface FormState {
   discountType: ContractDiscountType;
   discountValue: string;
   includedTransactions: string;
+  bonusTransactions: string;
+  bonusRecurrence: ContractBonusRecurrence;
   overageRate: string;
   paymentTermsDays: string;
   taxRate: string;
@@ -59,7 +65,8 @@ interface FormState {
 
 /** A partner's own saved contract always takes priority; the platform-wide default template
  * (admin-editable on the Settings page) only fills the form when this partner has no contract
- * of their own yet. */
+ * of their own yet. Bonus fields have no platform-wide default — a gift is always a deliberate,
+ * per-partner decision, never something a fresh contract inherits automatically. */
 function toFormState(contract: PartnerContract | null, defaultTemplate: DefaultContractTemplate): FormState {
   const source = contract ?? defaultTemplate;
   return {
@@ -67,6 +74,8 @@ function toFormState(contract: PartnerContract | null, defaultTemplate: DefaultC
     discountType: source.discountType,
     discountValue: source.discountValue,
     includedTransactions: source.includedTransactions,
+    bonusTransactions: contract?.bonusTransactions ?? "0",
+    bonusRecurrence: contract?.bonusRecurrence ?? "none",
     overageRate: source.overageRate,
     paymentTermsDays: String(source.paymentTermsDays),
     taxRate: source.taxRate,
@@ -97,6 +106,7 @@ export function PartnerContractSection({
 }) {
   const { t, lang } = useLang();
   const [form, setForm] = useState<FormState>(toFormState(initialContract, defaultTemplate));
+  const [contract, setContract] = useState(initialContract);
   const [history, setHistory] = useState(initialHistory);
   const [usage, setUsage] = useState(initialUsage);
   const [hasContract, setHasContract] = useState(initialContract !== null);
@@ -115,6 +125,8 @@ export function PartnerContractSection({
       discountType: form.discountType,
       discountValue: form.discountValue,
       includedTransactions: form.includedTransactions,
+      bonusTransactions: form.bonusTransactions,
+      bonusRecurrence: form.bonusRecurrence,
       overageRate: form.overageRate,
       paymentTermsDays: Number(form.paymentTermsDays),
       taxRate: form.taxRate,
@@ -135,10 +147,16 @@ export function PartnerContractSection({
     }
     toast.success(t("billingContractSavedToast"));
     setHasContract(true);
-    // Refresh the change history and usage inline so an admin sees the new entries without a full reload.
-    const [nextHistory, nextUsage] = await Promise.all([getPartnerBillingHistory(partnerId), getPartnerContractUsage(partnerId)]);
+    // Refresh the change history, usage, and the saved contract itself (for bonusTransactionsRemaining)
+    // inline so an admin sees the new values without a full reload.
+    const [nextHistory, nextUsage, nextContract] = await Promise.all([
+      getPartnerBillingHistory(partnerId),
+      getPartnerContractUsage(partnerId),
+      getPartnerContract(partnerId),
+    ]);
     setHistory(nextHistory);
     setUsage(nextUsage);
+    setContract(nextContract);
   }
 
   function describeHistoryEntry(event: BillingAuditEvent): string {
@@ -184,6 +202,31 @@ export function PartnerContractSection({
                 </p>
               </div>
             </div>
+            {usage.bonusRecurrence !== "none" ? (
+              <div className="grid grid-cols-2 gap-4 rounded-md border border-primary/20 bg-primary/5 p-3">
+                <div>
+                  <p className="text-xs text-muted-foreground">
+                    {usage.bonusRecurrence === "monthly" ? t("billingUsageBonusAppliedMonthlyLabel") : t("billingUsageBonusAppliedOnceLabel")}
+                  </p>
+                  <p className="text-lg font-semibold tabular-nums text-primary">{usage.bonusApplied.toLocaleString(locale)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">{t("billingUsageEffectiveOverageLabel")}</p>
+                  <p
+                    className={`text-lg font-semibold tabular-nums ${usage.effectiveOverageTransactions > 0 ? "text-destructive" : "text-foreground"}`}
+                  >
+                    {usage.effectiveOverageTransactions.toLocaleString(locale)}
+                  </p>
+                </div>
+                {usage.bonusRecurrence === "once" && contract ? (
+                  <p className="col-span-2 text-[11px] text-muted-foreground">
+                    {t("billingUsageBonusRemainingBefore")}
+                    {Number(contract.bonusTransactionsRemaining ?? "0").toLocaleString(locale)}
+                    {t("billingUsageBonusRemainingAfter")}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
             <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
               <div
                 className={`h-full rounded-full ${usage.percentUsed >= 100 ? "bg-destructive" : usage.percentUsed >= 80 ? "bg-amber-500" : "bg-primary"}`}
@@ -247,6 +290,36 @@ export function PartnerContractSection({
             value={form.includedTransactions}
             onChange={(e) => update("includedTransactions", e.target.value)}
           />
+        </label>
+
+        <label className="flex flex-col gap-1">
+          <span className="text-xs font-medium text-muted-foreground">{t("billingFieldBonusRecurrence")}</span>
+          <select
+            className={inputClass}
+            value={form.bonusRecurrence}
+            onChange={(e) => update("bonusRecurrence", e.target.value as ContractBonusRecurrence)}
+          >
+            <option value="none">{t("billingBonusRecurrenceNone")}</option>
+            <option value="once">{t("billingBonusRecurrenceOnce")}</option>
+            <option value="monthly">{t("billingBonusRecurrenceMonthly")}</option>
+          </select>
+        </label>
+
+        <label className="flex flex-col gap-1">
+          <span className="text-xs font-medium text-muted-foreground">
+            {form.bonusRecurrence === "monthly" ? t("billingFieldBonusTransactionsMonthly") : t("billingFieldBonusTransactions")}
+          </span>
+          <input
+            className={inputClass}
+            type="number"
+            step="1"
+            min="0"
+            disabled={form.bonusRecurrence === "none"}
+            value={form.bonusTransactions}
+            onChange={(e) => update("bonusTransactions", e.target.value)}
+          />
+          {form.bonusRecurrence === "once" ? <p className="mt-0.5 text-[11px] text-muted-foreground">{t("billingBonusOnceHint")}</p> : null}
+          {form.bonusRecurrence === "monthly" ? <p className="mt-0.5 text-[11px] text-muted-foreground">{t("billingBonusMonthlyHint")}</p> : null}
         </label>
 
         <label className="flex flex-col gap-1">
