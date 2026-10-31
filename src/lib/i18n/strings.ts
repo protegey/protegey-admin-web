@@ -851,14 +851,6 @@ const STRINGS = {
     en: "Global configuration that applies to every partner at once, not one partner at a time.",
     fr: "Configuration globale qui s'applique à tous les partenaires à la fois, et non partenaire par partenaire.",
   },
-  settingsKycProviderTitle: { en: "KYC provider", fr: "Fournisseur KYC" },
-  settingsKycProviderHint: {
-    en: "Identity-verification provider used for every partner's KYC flow across the platform (demo/sandbox today).",
-    fr: "Fournisseur de vérification d'identité utilisé pour le parcours KYC de tous les partenaires sur la plateforme (démo/bac à sable aujourd'hui).",
-  },
-  settingsKycProviderDidit: { en: "Didit", fr: "Didit" },
-  settingsKycProviderFacetec: { en: "FaceTec", fr: "FaceTec" },
-  settingsKycProviderUpdatedToast: { en: "KYC provider updated for all partners.", fr: "Fournisseur KYC mis à jour pour tous les partenaires." },
   settingsTimersTitle: { en: "Timers & intervals", fr: "Délais et intervalles" },
   settingsTimersHint: {
     en: "How long links stay valid and how often KYB submissions are re-screened — platform-wide.",

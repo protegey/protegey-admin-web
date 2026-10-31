@@ -4,8 +4,6 @@ import { apiFetch, ApiError } from "@/lib/api";
 import { getLang } from "@/lib/i18n/lang";
 import { t } from "@/lib/i18n/strings";
 
-export type KycProvider = "didit" | "facetec";
-
 export type NumericSettingKey =
   | "client_invitation_ttl_hours"
   | "partner_invitation_ttl_hours"
@@ -37,7 +35,6 @@ export interface DefaultContractTemplate {
 }
 
 export interface PlatformSettings {
-  kycProvider: KycProvider;
   client_invitation_ttl_hours: number;
   partner_invitation_ttl_hours: number;
   password_reset_ttl_hours: number;
@@ -52,16 +49,6 @@ export interface ActionResult {
 
 export async function getPlatformSettings(): Promise<PlatformSettings> {
   return apiFetch<PlatformSettings>("/settings");
-}
-
-export async function updateKycProvider(provider: KycProvider): Promise<ActionResult> {
-  const lang = await getLang();
-  try {
-    await apiFetch("/settings/kyc-provider", { method: "PATCH", body: { provider } });
-  } catch (error) {
-    return { error: error instanceof ApiError ? error.message : t(lang, "somethingWentWrongMessage") };
-  }
-  return { success: true };
 }
 
 export async function updateNumericSetting(key: NumericSettingKey, value: number): Promise<ActionResult> {
